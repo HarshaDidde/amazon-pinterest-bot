@@ -130,10 +130,7 @@ def _login(page):
 
     try:
         # Wait until we land somewhere other than /login/
-        page.wait_for_function(
-            "() => !window.location.href.includes('/login/')",
-            timeout=20000,
-        )
+        page.wait_for_url(lambda url: "/login/" not in url, timeout=20000)
         time.sleep(3)
         print("    [✓] Logged in to Pinterest")
         return True
