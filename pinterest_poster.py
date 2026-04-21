@@ -220,67 +220,40 @@ def _create_pin(page, product: dict, board_name: str, description: str) -> str |
             'button:has-text("Select")',
         ])
 
-        # Screenshot 1: right after trying to open the board dropdown
-        page.screenshot(path="/tmp/debug_1_board_dropdown_opened.png", full_page=False)
-
         if not opened:
             print(f"  [x] Could not open board selector for: {product['title'][:50]}")
             return None
 
-        # Wait until at least one board item is actually visible in the dropdown
-        board_list_sel = '[data-test-id="board-row"], div[role="option"], [data-test-id="board-list-item"]'
+        # Wait for "All boards" header — confirms the dropdown loaded
         try:
-            page.locator(board_list_sel).first.wait_for(state="visible", timeout=8000)
+            page.get_by_text("All boards").first.wait_for(state="visible", timeout=8000)
         except PWTimeout:
-            page.screenshot(path="/tmp/debug_2_board_list_timeout.png", full_page=False)
-            print(f"  [x] Board dropdown never loaded")
-            return None
+            time.sleep(3)   # fallback wait
 
-        # Screenshot 2: board list is loaded
-        page.screenshot(path="/tmp/debug_2_board_list_loaded.png", full_page=False)
-
-        # Dump all visible text in the dropdown area to the log so we can see board names
+        # Type board name to filter the list
         try:
-            dropdown = page.locator('[data-test-id="board-dropdown"], div[role="listbox"], div[role="dialog"]').first
-            if dropdown.is_visible(timeout=1000):
-                print(f"    Dropdown text: {dropdown.inner_text()[:300]}")
-        except Exception:
-            pass
-
-        # Type board name into search to filter
-        try:
-            search = page.locator(
-                'input[placeholder*="Search" i], input[aria-label*="Search" i]'
-            ).first
+            search = page.locator('input[placeholder*="Search" i]').first
             if search.is_visible(timeout=2000):
                 search.fill("")
                 time.sleep(0.3)
                 search.type(board_name, delay=80)
-                time.sleep(2.5)
+                time.sleep(2.0)
         except Exception:
             pass
 
-        # Screenshot 3: after typing search term
-        page.screenshot(path="/tmp/debug_3_after_search.png", full_page=False)
+        # Click the board by its visible text — most reliable after Pinterest's UI changes
+        try:
+            page.get_by_text(board_name, exact=True).first.click(timeout=5000)
+            print(f"    Board '{board_name}' selected")
+        except Exception:
+            # Fallback: partial text match
+            try:
+                page.get_by_text(board_name).first.click(timeout=3000)
+                print(f"    Board '{board_name}' selected (partial match)")
+            except Exception:
+                print(f"  [x] Board '{board_name}' not found in dropdown")
+                return None
 
-        # Click the board
-        board_clicked = _click_first(page, [
-            f'[data-test-id="board-row"]:has-text("{board_name}")',
-            f'[data-test-id="board-list-item"]:has-text("{board_name}")',
-            f'div[role="option"]:has-text("{board_name}")',
-            f'button:has-text("{board_name}")',
-            f'[data-test-id="board-row"]',
-            f'div[role="option"]',
-        ], timeout=5000)
-
-        if not board_clicked:
-            page.screenshot(path="/tmp/debug_4_board_not_found.png", full_page=False)
-            print(f"  [x] Board '{board_name}' not found in dropdown")
-            return None
-
-        print(f"    Board '{board_name}' selected")
-        # Screenshot 4: board selected successfully
-        page.screenshot(path="/tmp/debug_4_board_selected.png", full_page=False)
         time.sleep(1.5)
 
         # ── Publish ───────────────────────────────────────────────
