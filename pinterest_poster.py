@@ -219,20 +219,35 @@ def _create_pin(page, product: dict, board_name: str, description: str) -> str |
             'button:has-text("Choose a board")',
             'button:has-text("Select")',
         ])
+
+        # Screenshot 1: right after trying to open the board dropdown
+        page.screenshot(path="/tmp/debug_1_board_dropdown_opened.png", full_page=False)
+
         if not opened:
             print(f"  [x] Could not open board selector for: {product['title'][:50]}")
             return None
 
         # Wait until at least one board item is actually visible in the dropdown
-        # (dropdown fetches boards from API — can take 2–4 seconds)
         board_list_sel = '[data-test-id="board-row"], div[role="option"], [data-test-id="board-list-item"]'
         try:
             page.locator(board_list_sel).first.wait_for(state="visible", timeout=8000)
         except PWTimeout:
-            print(f"  [x] Board dropdown never loaded for: {product['title'][:50]}")
+            page.screenshot(path="/tmp/debug_2_board_list_timeout.png", full_page=False)
+            print(f"  [x] Board dropdown never loaded")
             return None
 
-        # Type board name into search to filter — use slow typing so React re-renders
+        # Screenshot 2: board list is loaded
+        page.screenshot(path="/tmp/debug_2_board_list_loaded.png", full_page=False)
+
+        # Dump all visible text in the dropdown area to the log so we can see board names
+        try:
+            dropdown = page.locator('[data-test-id="board-dropdown"], div[role="listbox"], div[role="dialog"]').first
+            if dropdown.is_visible(timeout=1000):
+                print(f"    Dropdown text: {dropdown.inner_text()[:300]}")
+        except Exception:
+            pass
+
+        # Type board name into search to filter
         try:
             search = page.locator(
                 'input[placeholder*="Search" i], input[aria-label*="Search" i]'
@@ -241,25 +256,31 @@ def _create_pin(page, product: dict, board_name: str, description: str) -> str |
                 search.fill("")
                 time.sleep(0.3)
                 search.type(board_name, delay=80)
-                # Wait until the list shrinks to just our match
                 time.sleep(2.5)
         except Exception:
             pass
 
-        # Click the board — try exact text match first, then first visible result
+        # Screenshot 3: after typing search term
+        page.screenshot(path="/tmp/debug_3_after_search.png", full_page=False)
+
+        # Click the board
         board_clicked = _click_first(page, [
             f'[data-test-id="board-row"]:has-text("{board_name}")',
             f'[data-test-id="board-list-item"]:has-text("{board_name}")',
             f'div[role="option"]:has-text("{board_name}")',
             f'button:has-text("{board_name}")',
-            f'[data-test-id="board-row"]',       # first visible after filter
+            f'[data-test-id="board-row"]',
             f'div[role="option"]',
         ], timeout=5000)
 
         if not board_clicked:
+            page.screenshot(path="/tmp/debug_4_board_not_found.png", full_page=False)
             print(f"  [x] Board '{board_name}' not found in dropdown")
             return None
+
         print(f"    Board '{board_name}' selected")
+        # Screenshot 4: board selected successfully
+        page.screenshot(path="/tmp/debug_4_board_selected.png", full_page=False)
         time.sleep(1.5)
 
         # ── Publish ───────────────────────────────────────────────
@@ -281,12 +302,14 @@ def _create_pin(page, product: dict, board_name: str, description: str) -> str |
             return current_url
 
         # Layer 2: scan all links on the page for a real pin URL
-        # Pinterest sometimes shows a "View pin" button or thumbnail link after saving
+        # Works for both www.pinterest.com and ca.pinterest.com
         try:
             for link in page.locator('a[href*="/pin/"]').all():
                 href = link.get_attribute("href") or ""
                 if re.search(r'/pin/\d{10,}', href):
-                    return href if href.startswith("http") else f"https://www.pinterest.com{href}"
+                    if href.startswith("http"):
+                        return href
+                    return f"https://ca.pinterest.com{href}"
         except Exception:
             pass
 
