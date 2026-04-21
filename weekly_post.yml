@@ -1,0 +1,78 @@
+# ─────────────────────────────────────────────────────────────────
+#  .github/workflows/daily_post.yml
+#
+#  IMPORTANT: This file must live at  .github/workflows/daily_post.yml
+#  inside your GitHub repository for Actions to pick it up.
+#
+#  Runs the Amazon → Pinterest bot DAILY at two times:
+#    • 3:30 AM  UTC  = 9:00  AM IST  (morning fresh-products run)
+#    • 15:30    UTC  = 9:00  PM IST  (evening high-traffic window)
+#
+#  Required GitHub Secrets (repo → Settings → Secrets → Actions):
+#    AMAZON_ASSOCIATE_TAG      — e.g. "mystore-20"
+#    PINTEREST_ACCESS_TOKEN    — Pinterest API v5 Bearer token
+#    GOOGLE_SHEET_ID           — Google Sheet ID for deduplication log
+#    GOOGLE_CREDENTIALS_JSON   — Full content of service-account JSON file
+#
+#  Optional board-ID secrets (recommended — keeps board IDs out of code):
+#    BOARD_ID_BEAUTY / BOARD_ID_HOME / BOARD_ID_FASHION / BOARD_ID_SPORTS
+#    BOARD_ID_TOOLS  / BOARD_ID_ELECTRONICS / BOARD_ID_HEALTH / BOARD_ID_TOYS
+# ─────────────────────────────────────────────────────────────────
+
+name: Daily Amazon → Pinterest Post
+
+on:
+  schedule:
+    - cron: "30 3  * * *"    # 09:00 AM IST  — morning run
+    - cron: "30 15 * * *"    # 09:00 PM IST  — evening run
+
+  workflow_dispatch:          # Manual trigger from GitHub UI (for testing)
+
+jobs:
+  post-pins:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45       # 8 categories × a few retries — stay well under
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Cache pip dependencies
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/pip
+          key: ${{ runner.os }}-pip-${{ hashFiles('requirements.txt') }}
+          restore-keys: ${{ runner.os }}-pip-
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Run bot
+        env:
+          AMAZON_ASSOCIATE_TAG:     ${{ secrets.AMAZON_ASSOCIATE_TAG }}
+          PINTEREST_ACCESS_TOKEN:   ${{ secrets.PINTEREST_ACCESS_TOKEN }}
+          GOOGLE_SHEET_ID:          ${{ secrets.GOOGLE_SHEET_ID }}
+          GOOGLE_CREDENTIALS_JSON:  ${{ secrets.GOOGLE_CREDENTIALS_JSON }}
+          BOARD_ID_BEAUTY:          ${{ secrets.BOARD_ID_BEAUTY }}
+          BOARD_ID_HOME:            ${{ secrets.BOARD_ID_HOME }}
+          BOARD_ID_FASHION:         ${{ secrets.BOARD_ID_FASHION }}
+          BOARD_ID_SPORTS:          ${{ secrets.BOARD_ID_SPORTS }}
+          BOARD_ID_TOOLS:           ${{ secrets.BOARD_ID_TOOLS }}
+          BOARD_ID_ELECTRONICS:     ${{ secrets.BOARD_ID_ELECTRONICS }}
+          BOARD_ID_HEALTH:          ${{ secrets.BOARD_ID_HEALTH }}
+          BOARD_ID_TOYS:            ${{ secrets.BOARD_ID_TOYS }}
+        run: python main.py
+
+      - name: Upload run log
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: run-log-${{ github.run_number }}
+          path: "*.log"
+          if-no-files-found: ignore
+          retention-days: 14
