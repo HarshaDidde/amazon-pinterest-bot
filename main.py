@@ -92,11 +92,11 @@ def run():
 
         # Post to Pinterest
         successfully_posted = post_pins_for_category(
-            products       = new_products,
-            board_id       = cat["board_id"],
-            hashtags       = cat["hashtags"],
-            template_key   = cat["description_template"],
-            limit          = limit,
+            products     = new_products,
+            board_name   = cat["board_name"],
+            hashtags     = cat["hashtags"],
+            template_key = cat["description_template"],
+            limit        = limit,
         )
 
         # Log to Google Sheet
@@ -122,7 +122,7 @@ def run():
             print(f"    Bypassing cooldown filter for retry on '{top_cat['name']}'")
             retry_posted = post_pins_for_category(
                 products     = products[:1],
-                board_id     = top_cat["board_id"],
+                board_name   = top_cat["board_name"],
                 hashtags     = top_cat["hashtags"],
                 template_key = top_cat["description_template"],
                 limit        = 1,

@@ -49,7 +49,7 @@ CATEGORIES = [
     {
         "name":                 "Beauty & Personal Care",
         "bestseller_url":       "https://www.amazon.ca/gp/bestsellers/beauty",
-        "board_id":             os.environ.get("BOARD_ID_BEAUTY", "YOUR_BOARD_ID_BEAUTY"),
+        "board_name":           "Beauty & Personal Care",
         "commission_rate":      8.0,
         "daily_posts":          5,
         "description_template": "Beauty & Personal Care",
@@ -62,7 +62,7 @@ CATEGORIES = [
     {
         "name":                 "Home & Kitchen",
         "bestseller_url":       "https://www.amazon.ca/gp/bestsellers/kitchen",
-        "board_id":             os.environ.get("BOARD_ID_HOME", "YOUR_BOARD_ID_HOME"),
+        "board_name":           "Home & Kitchen",
         "commission_rate":      4.5,
         "daily_posts":          5,
         "description_template": "Home & Kitchen",
@@ -75,7 +75,7 @@ CATEGORIES = [
     {
         "name":                 "Clothing & Fashion",
         "bestseller_url":       "https://www.amazon.ca/gp/bestsellers/fashion",
-        "board_id":             os.environ.get("BOARD_ID_FASHION", "YOUR_BOARD_ID_FASHION"),
+        "board_name":           "Clothing & Fashion",
         "commission_rate":      4.0,
         "daily_posts":          4,
         "description_template": "Clothing & Fashion",
@@ -88,7 +88,7 @@ CATEGORIES = [
     {
         "name":                 "Sports & Fitness",
         "bestseller_url":       "https://www.amazon.ca/gp/bestsellers/sporting-goods",
-        "board_id":             os.environ.get("BOARD_ID_SPORTS", "YOUR_BOARD_ID_SPORTS"),
+        "board_name":           "Sports & Fitness",
         "commission_rate":      4.5,
         "daily_posts":          4,
         "description_template": "Sports & Fitness",
@@ -101,7 +101,7 @@ CATEGORIES = [
     {
         "name":                 "Tools & Home Improvement",
         "bestseller_url":       "https://www.amazon.ca/gp/bestsellers/hi",
-        "board_id":             os.environ.get("BOARD_ID_TOOLS", "YOUR_BOARD_ID_TOOLS"),
+        "board_name":           "Tools & Home Improvement",
         "commission_rate":      5.5,
         "daily_posts":          3,
         "description_template": "Tools & Home Improvement",
@@ -114,7 +114,7 @@ CATEGORIES = [
     {
         "name":                 "Electronics",
         "bestseller_url":       "https://www.amazon.ca/gp/bestsellers/electronics",
-        "board_id":             os.environ.get("BOARD_ID_ELECTRONICS", "YOUR_BOARD_ID_ELECTRONICS"),
+        "board_name":           "Electronics",
         "commission_rate":      4.0,
         "daily_posts":          3,
         "description_template": "Electronics",
@@ -127,7 +127,7 @@ CATEGORIES = [
     {
         "name":                 "Health & Household",
         "bestseller_url":       "https://www.amazon.ca/gp/bestsellers/hpc",
-        "board_id":             os.environ.get("BOARD_ID_HEALTH", "YOUR_BOARD_ID_HEALTH"),
+        "board_name":           "Health & Household",
         "commission_rate":      2.5,
         "daily_posts":          3,
         "description_template": "Health & Household",
@@ -140,7 +140,7 @@ CATEGORIES = [
     {
         "name":                 "Toys & Games",
         "bestseller_url":       "https://www.amazon.ca/gp/bestsellers/toys",
-        "board_id":             os.environ.get("BOARD_ID_TOYS", "YOUR_BOARD_ID_TOYS"),
+        "board_name":           "Toys & Games",
         "commission_rate":      3.0,
         "daily_posts":          2,
         "description_template": "Toys & Games",

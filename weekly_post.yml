@@ -52,20 +52,17 @@ jobs:
       - name: Install dependencies
         run: pip install -r requirements.txt
 
+      - name: Install Playwright browser
+        run: playwright install chromium && playwright install-deps chromium
+
       - name: Run bot
         env:
           AMAZON_ASSOCIATE_TAG:     ${{ secrets.AMAZON_ASSOCIATE_TAG }}
           PINTEREST_ACCESS_TOKEN:   ${{ secrets.PINTEREST_ACCESS_TOKEN }}
           GOOGLE_SHEET_ID:          ${{ secrets.GOOGLE_SHEET_ID }}
           GOOGLE_CREDENTIALS_JSON:  ${{ secrets.GOOGLE_CREDENTIALS_JSON }}
-          BOARD_ID_BEAUTY:          ${{ secrets.BOARD_ID_BEAUTY }}
-          BOARD_ID_HOME:            ${{ secrets.BOARD_ID_HOME }}
-          BOARD_ID_FASHION:         ${{ secrets.BOARD_ID_FASHION }}
-          BOARD_ID_SPORTS:          ${{ secrets.BOARD_ID_SPORTS }}
-          BOARD_ID_TOOLS:           ${{ secrets.BOARD_ID_TOOLS }}
-          BOARD_ID_ELECTRONICS:     ${{ secrets.BOARD_ID_ELECTRONICS }}
-          BOARD_ID_HEALTH:          ${{ secrets.BOARD_ID_HEALTH }}
-          BOARD_ID_TOYS:            ${{ secrets.BOARD_ID_TOYS }}
+          PINTEREST_EMAIL:          ${{ secrets.PINTEREST_EMAIL }}
+          PINTEREST_PASSWORD:       ${{ secrets.PINTEREST_PASSWORD }}
         run: python main.py
 
       - name: Upload run log
