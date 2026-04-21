@@ -74,13 +74,17 @@ def run():
             run_results.append((cat["name"], 0))
             continue
 
-        # Deduplicate: remove already-posted ASINs AND within-batch duplicates
-        seen      = set(posted_asins)
+        # Deduplicate: remove already-posted ASINs, within-batch ASIN dupes,
+        # and title-prefix dupes (catches same product with different variant ASINs)
+        seen_asins  = set(posted_asins)
+        seen_titles = set()
         new_products = []
         for p in products:
-            if p["asin"] not in seen:
+            title_key = p["title"].lower()[:45]
+            if p["asin"] not in seen_asins and title_key not in seen_titles:
                 new_products.append(p)
-                seen.add(p["asin"])
+                seen_asins.add(p["asin"])
+                seen_titles.add(title_key)
         skipped = len(products) - len(new_products)
 
         if not new_products:

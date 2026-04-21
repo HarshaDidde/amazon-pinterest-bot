@@ -188,6 +188,13 @@ def fetch_best_sellers(bestseller_url: str, category_name: str, n: int = None) -
                 if len(products) >= limit:
                     break
 
-    products = products[:limit]
+    # Deduplicate by ASIN (same product can appear at multiple positions on Amazon)
+    seen, unique = set(), []
+    for p in products:
+        if p["asin"] not in seen:
+            seen.add(p["asin"])
+            unique.append(p)
+    products = unique[:limit]
+
     print(f"    [+] Extracted {len(products)} products for '{category_name}'")
     return products
