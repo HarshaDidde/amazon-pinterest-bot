@@ -5,6 +5,7 @@
 # ─────────────────────────────────────────────
 
 import os
+import re
 import time
 import random
 import tempfile
@@ -262,30 +263,32 @@ def _create_pin(page, product: dict, board_name: str, description: str) -> str |
             print(f"  [x] Could not find Publish button for: {product['title'][:50]}")
             return None
 
-        time.sleep(5)   # give Pinterest time to save and redirect
+        time.sleep(6)   # give Pinterest time to save and redirect
 
-        # Capture pin URL — Pinterest may redirect to pin page OR stay on creation tool
+        # Layer 1: redirected directly to the pin page
         current_url = page.url
-        if "/pin/" in current_url:
-            pin_url = current_url
-        else:
-            # Check for success toast/modal
-            success = False
-            for indicator in [
-                'text="Pin saved"', 'text="Saved"',
-                '[data-test-id="pin-saved-toast"]',
-                '[data-test-id="success"]',
-            ]:
-                try:
-                    if page.locator(indicator).is_visible(timeout=2000):
-                        success = True
-                        break
-                except Exception:
-                    pass
-            # If publish was clicked without error, treat as success
-            pin_url = f"posted_{int(time.time())}"
+        if re.search(r'/pin/\d{10,}', current_url):
+            return current_url
 
-        return pin_url
+        # Layer 2: scan all links on the page for a real pin URL
+        # Pinterest sometimes shows a "View pin" button or thumbnail link after saving
+        try:
+            for link in page.locator('a[href*="/pin/"]').all():
+                href = link.get_attribute("href") or ""
+                if re.search(r'/pin/\d{10,}', href):
+                    return href if href.startswith("http") else f"https://www.pinterest.com{href}"
+        except Exception:
+            pass
+
+        # Layer 3: wait a bit more and re-check URL (some redirects are slow)
+        time.sleep(4)
+        current_url = page.url
+        if re.search(r'/pin/\d{10,}', current_url):
+            return current_url
+
+        # Layer 4: pin was posted but Pinterest didn't give us the URL
+        # Mark clearly so the sheet is honest — not a fake pinterest.com URL
+        return f"posted_no_url_{int(time.time())}"
 
     except Exception as e:
         print(f"  [x] Pin creation error: {e}")
