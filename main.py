@@ -65,8 +65,8 @@ def run():
 
         print(f"[→] {cat['name']}  (target: {limit} pins, commission: {cat['commission_rate']}%)")
 
-        # Crawl Amazon.ca — fetch enough to cover limit after filtering
-        fetch_n  = limit + 5   # a few extra in case some are dupes
+        # Crawl Amazon.ca — fetch extra to cover cooldown skips and dupes
+        fetch_n  = limit + 15
         products = fetch_best_sellers(cat["bestseller_url"], cat["name"], n=fetch_n)
 
         if not products:

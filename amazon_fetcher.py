@@ -83,9 +83,15 @@ def _extract_asin(url: str) -> str:
 def _parse_bestsellers_page(soup: BeautifulSoup, category_name: str, limit: int = PRODUCTS_PER_CATEGORY) -> list[dict]:
     products = []
 
-    items = soup.select("div.zg-grid-general-faceout, div[data-asin]")
+    # Try multiple selector strategies — Amazon changes its HTML layout frequently
+    items = soup.select("div.zg-grid-general-faceout")
     if not items:
-        items = soup.select("li.zg-item-immersion, div.zg-item")
+        items = soup.select("li.zg-item-immersion")
+    if not items:
+        items = soup.select("div.zg-item")
+    if not items:
+        # Broad fallback: any div with a valid data-asin attribute
+        items = [t for t in soup.select("div[data-asin]") if len(t.get("data-asin", "")) == 10]
 
     for item in items:
         if len(products) >= limit:

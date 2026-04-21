@@ -175,7 +175,21 @@ def _create_pin(page, product: dict, board_name: str, description: str) -> str |
         return None
 
     try:
-        page.goto("https://www.pinterest.com/pin-creation-tool/", wait_until="domcontentloaded", timeout=60000)
+        # Navigate with retry — Pinterest can be slow after creating a pin
+        for attempt in range(3):
+            try:
+                page.goto(
+                    "https://www.pinterest.com/pin-creation-tool/",
+                    wait_until="domcontentloaded",
+                    timeout=90000,
+                )
+                break
+            except PWTimeout:
+                if attempt < 2:
+                    print(f"    Navigation timeout (attempt {attempt+1}/3) — retrying...")
+                    time.sleep(8)
+                else:
+                    raise
         time.sleep(3)
         _dismiss_popups(page)
 

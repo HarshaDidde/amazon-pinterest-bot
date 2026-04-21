@@ -87,7 +87,7 @@ CATEGORIES = [
     },
     {
         "name":                 "Sports & Fitness",
-        "bestseller_url":       "https://www.amazon.ca/gp/bestsellers/sporting-goods",
+        "bestseller_url":       "https://www.amazon.ca/gp/bestsellers/exercise-and-fitness",
         "board_name":           "Sports & Fitness",
         "commission_rate":      4.5,
         "daily_posts":          4,
