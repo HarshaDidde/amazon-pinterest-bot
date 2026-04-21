@@ -30,7 +30,7 @@ on:
 
 jobs:
   post-pins:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     timeout-minutes: 45       # 8 categories × a few retries — stay well under
 
     steps:
