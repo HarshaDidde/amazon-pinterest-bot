@@ -197,7 +197,13 @@ def _create_pin(page, product: dict, board_name: str, description: str) -> str |
         file_input = page.locator('input[type="file"]').first
         file_input.set_input_files(image_path)
         print(f"    Uploading image...")
-        time.sleep(5)   # wait for Pinterest to process and show the editing panel
+        # Wait for the title field to appear — confirms editing panel has loaded
+        try:
+            page.locator('[data-test-id="pin-draft-title"], input[placeholder*="title" i]').first.wait_for(
+                state="visible", timeout=15000
+            )
+        except PWTimeout:
+            time.sleep(6)   # fallback if title field selector doesn't match
         _dismiss_popups(page)
 
         # ── Title ─────────────────────────────────────────────────
@@ -227,14 +233,25 @@ def _create_pin(page, product: dict, board_name: str, description: str) -> str |
         time.sleep(0.5)
 
         # ── Board selector ────────────────────────────────────────
-        opened = _click_first(page, [
-            '[data-test-id="board-dropdown-select-button"]',
-            'button[aria-label*="board" i]',
-            'button:has-text("Choose a board")',
-            'button:has-text("Select")',
-        ])
+        # Wait for page to settle after filling fields before touching the board dropdown
+        time.sleep(1.5)
 
-        if not opened:
+        board_opened = False
+        for board_attempt in range(3):
+            board_opened = _click_first(page, [
+                '[data-test-id="board-dropdown-select-button"]',
+                'button[aria-label*="board" i]',
+                'button:has-text("Choose a board")',
+                'button:has-text("Select")',
+                '[data-test-id="pin-draft-board"] button',
+                'div[data-test-id="board-selection"] button',
+            ], timeout=4000)
+            if board_opened:
+                break
+            print(f"    Board selector attempt {board_attempt+1}/3 — retrying...")
+            time.sleep(2)
+
+        if not board_opened:
             print(f"  [x] Could not open board selector for: {product['title'][:50]}")
             return None
 
