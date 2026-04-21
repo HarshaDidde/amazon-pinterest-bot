@@ -74,9 +74,14 @@ def run():
             run_results.append((cat["name"], 0))
             continue
 
-        # Filter out recently posted products
-        new_products = [p for p in products if p["asin"] not in posted_asins]
-        skipped      = len(products) - len(new_products)
+        # Deduplicate: remove already-posted ASINs AND within-batch duplicates
+        seen      = set(posted_asins)
+        new_products = []
+        for p in products:
+            if p["asin"] not in seen:
+                new_products.append(p)
+                seen.add(p["asin"])
+        skipped = len(products) - len(new_products)
 
         if not new_products:
             print("    All products in cooldown — skipping.\n")

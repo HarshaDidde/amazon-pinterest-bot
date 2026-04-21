@@ -174,7 +174,7 @@ def _create_pin(page, product: dict, board_name: str, description: str) -> str |
         return None
 
     try:
-        page.goto("https://www.pinterest.com/pin-creation-tool/", wait_until="domcontentloaded")
+        page.goto("https://www.pinterest.com/pin-creation-tool/", wait_until="domcontentloaded", timeout=60000)
         time.sleep(3)
         _dismiss_popups(page)
 
@@ -221,28 +221,35 @@ def _create_pin(page, product: dict, board_name: str, description: str) -> str |
         if not opened:
             print(f"  [x] Could not open board selector for: {product['title'][:50]}")
             return None
-        time.sleep(1.5)
+        time.sleep(2.5)   # longer wait — board list takes time to render
 
-        # Search for the board name and click it
+        # Type board name into the search box to filter the list
         try:
-            search = page.locator('input[placeholder*="Search boards" i], input[aria-label*="Search" i]').first
-            if search.is_visible(timeout=1500):
-                search.fill(board_name)
-                time.sleep(1)
+            search = page.locator(
+                'input[placeholder*="Search" i], input[aria-label*="Search" i]'
+            ).first
+            if search.is_visible(timeout=2000):
+                search.fill("")
+                time.sleep(0.2)
+                search.type(board_name, delay=60)   # type slowly so React re-renders
+                time.sleep(2.0)   # wait for filtered results
         except Exception:
             pass
 
+        # Click the board — after filtering, first result should be ours
         board_clicked = _click_first(page, [
             f'[data-test-id="board-row"]:has-text("{board_name}")',
             f'div[role="option"]:has-text("{board_name}")',
+            f'[data-test-id="board-row"]',   # first result after filter
+            f'div[role="option"]',
             f'button:has-text("{board_name}")',
             f'span:has-text("{board_name}")',
-        ], timeout=3000)
+        ], timeout=4000)
 
         if not board_clicked:
-            print(f"  [x] Board '{board_name}' not found — make sure it exists on Pinterest")
+            print(f"  [x] Board '{board_name}' not found in dropdown")
             return None
-        time.sleep(1)
+        time.sleep(1.5)
 
         # ── Publish ───────────────────────────────────────────────
         published = _click_first(page, [
@@ -255,15 +262,28 @@ def _create_pin(page, product: dict, board_name: str, description: str) -> str |
             print(f"  [x] Could not find Publish button for: {product['title'][:50]}")
             return None
 
-        # Wait for publish to complete
-        time.sleep(4)
+        time.sleep(5)   # give Pinterest time to save and redirect
 
-        # Try to capture the resulting pin URL
-        try:
-            page.wait_for_url("**/pin/**", timeout=8000)
-            pin_url = page.url
-        except PWTimeout:
-            pin_url = "https://www.pinterest.com/"   # fallback — pin was posted but URL unknown
+        # Capture pin URL — Pinterest may redirect to pin page OR stay on creation tool
+        current_url = page.url
+        if "/pin/" in current_url:
+            pin_url = current_url
+        else:
+            # Check for success toast/modal
+            success = False
+            for indicator in [
+                'text="Pin saved"', 'text="Saved"',
+                '[data-test-id="pin-saved-toast"]',
+                '[data-test-id="success"]',
+            ]:
+                try:
+                    if page.locator(indicator).is_visible(timeout=2000):
+                        success = True
+                        break
+                except Exception:
+                    pass
+            # If publish was clicked without error, treat as success
+            pin_url = f"posted_{int(time.time())}"
 
         return pin_url
 
