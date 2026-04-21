@@ -222,34 +222,44 @@ def _create_pin(page, product: dict, board_name: str, description: str) -> str |
         if not opened:
             print(f"  [x] Could not open board selector for: {product['title'][:50]}")
             return None
-        time.sleep(2.5)   # longer wait — board list takes time to render
 
-        # Type board name into the search box to filter the list
+        # Wait until at least one board item is actually visible in the dropdown
+        # (dropdown fetches boards from API — can take 2–4 seconds)
+        board_list_sel = '[data-test-id="board-row"], div[role="option"], [data-test-id="board-list-item"]'
+        try:
+            page.locator(board_list_sel).first.wait_for(state="visible", timeout=8000)
+        except PWTimeout:
+            print(f"  [x] Board dropdown never loaded for: {product['title'][:50]}")
+            return None
+
+        # Type board name into search to filter — use slow typing so React re-renders
         try:
             search = page.locator(
                 'input[placeholder*="Search" i], input[aria-label*="Search" i]'
             ).first
             if search.is_visible(timeout=2000):
                 search.fill("")
-                time.sleep(0.2)
-                search.type(board_name, delay=60)   # type slowly so React re-renders
-                time.sleep(2.0)   # wait for filtered results
+                time.sleep(0.3)
+                search.type(board_name, delay=80)
+                # Wait until the list shrinks to just our match
+                time.sleep(2.5)
         except Exception:
             pass
 
-        # Click the board — after filtering, first result should be ours
+        # Click the board — try exact text match first, then first visible result
         board_clicked = _click_first(page, [
             f'[data-test-id="board-row"]:has-text("{board_name}")',
+            f'[data-test-id="board-list-item"]:has-text("{board_name}")',
             f'div[role="option"]:has-text("{board_name}")',
-            f'[data-test-id="board-row"]',   # first result after filter
-            f'div[role="option"]',
             f'button:has-text("{board_name}")',
-            f'span:has-text("{board_name}")',
-        ], timeout=4000)
+            f'[data-test-id="board-row"]',       # first visible after filter
+            f'div[role="option"]',
+        ], timeout=5000)
 
         if not board_clicked:
             print(f"  [x] Board '{board_name}' not found in dropdown")
             return None
+        print(f"    Board '{board_name}' selected")
         time.sleep(1.5)
 
         # ── Publish ───────────────────────────────────────────────
