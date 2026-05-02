@@ -8,90 +8,148 @@ import os
 import re
 import time
 import random
-import tempfile
-import requests
 from pathlib import Path
 from playwright.sync_api import sync_playwright, TimeoutError as PWTimeout
+
+from image_generator import generate_pin_image
 
 PINTEREST_EMAIL    = os.environ.get("PINTEREST_EMAIL", "")
 PINTEREST_PASSWORD = os.environ.get("PINTEREST_PASSWORD", "")
 POST_DELAY_SECONDS = 8
 
 # ─────────────────────────────────────────────────────────────────────────────
-#  Description templates — 3 variants per category, picked randomly each post.
-#  This prevents Pinterest from flagging pins as duplicate content.
+#  Pin title suffix per category.
+#  Pinterest title = cleaned product name + suffix.
+#  Keeps it keyword-rich and short enough to read at a glance.
+# ─────────────────────────────────────────────────────────────────────────────
+_TITLE_SUFFIX = {
+    "Beauty & Personal Care":   "| Amazon Beauty Find",
+    "Home & Kitchen":           "| Amazon Home Find",
+    "Arts & Crafts":            "| Amazon Craft Find",
+    "Pet Supplies":             "| Amazon Pet Find",
+    "Clothing & Fashion":       "| Amazon Fashion Find",
+    "Baby & Nursery":           "| Amazon Baby Find",
+    "Sports & Fitness":         "| Amazon Fitness Find",
+    "Tools & Home Improvement": "| Amazon Tool Find",
+    "Outdoor & Patio":          "| Amazon Outdoor Find",
+    "Electronics":              "| Amazon Tech Find",
+    "Health & Household":       "| Amazon Wellness Find",
+    "Office & Desk":            "| Amazon Office Find",
+    "Toys & Games":             "| Amazon Gift Idea",
+}
+
+# ─────────────────────────────────────────────────────────────────────────────
+#  Description templates — 3 variants per category.
+#  Rules (per CLAUDE.md):
+#   • Lead sentence = keyword phrase people actually type into Pinterest search
+#   • Price must appear in the description
+#   • Max 5 hashtags
+#   • No filler ("Amazing!", "Shop now!", "Tap to shop!")
+#   • Natural language throughout
 # ─────────────────────────────────────────────────────────────────────────────
 _TEMPLATES = {
     "Beauty & Personal Care": [
-        "✨ {title} — one of Amazon Canada's best-selling beauty products right now. {price_text}Loved by thousands of shoppers across Canada. Shop with free shipping 👇\n\n{tags}",
-        "Your next skincare obsession 💄 {title} is trending on Amazon Canada's best sellers. {price_text}Thousands of glowing reviews. Tap the link to shop!\n\n{tags}",
-        "Beauty find of the day 🌟 {title} — top-rated in Beauty & Personal Care on Amazon Canada. {price_text}Perfect gift or everyday essential. Free delivery available 👇\n\n{tags}",
+        "Top-rated Amazon skincare find — {short_title}. {price_text}Thousands of five-star reviews and a staple in beauty routines across the US. A simple addition that actually delivers results.\nShop the link below.\n\n{tags}",
+        "Best-selling Amazon beauty essential — {short_title}. {price_text}One of the most loved picks in Beauty & Personal Care right now. Whether for yourself or as a gift, this one is worth it.\nShop the link below.\n\n{tags}",
+        "Affordable Amazon beauty find that lives up to the hype — {short_title}. {price_text}High-quality formula, real results, and a price that makes sense. This keeps selling out for a reason.\nShop the link below.\n\n{tags}",
     ],
     "Home & Kitchen": [
-        "Every home needs this ✨ {title} is Amazon Canada's best-selling home essential right now. {price_text}Upgrade your space for less — ships fast. Tap to shop 👇\n\n{tags}",
-        "Home hack of the day 🏠 {title} — top-rated in Home & Kitchen on Amazon Canada. {price_text}Easy upgrade, big impact. Affordable and highly rated 👇\n\n{tags}",
-        "Amazon Canada's top pick in Home & Kitchen ⭐ {title}. {price_text}Fast shipping, hassle-free returns. Tap to shop 👇\n\n{tags}",
+        "Kitchen organization find from Amazon worth every penny — {short_title}. {price_text}One of the highest-rated picks in Home & Kitchen right now. A small upgrade that makes a real difference.\nShop the link below.\n\n{tags}",
+        "Amazon home essential everyone is buying right now — {short_title}. {price_text}Practical, well-reviewed, and priced right. Exactly the home upgrade you didn't know you needed.\nShop the link below.\n\n{tags}",
+        "Best-selling Amazon home find — {short_title}. {price_text}Trusted by thousands of happy customers. Fast shipping and easy returns make this a no-brainer.\nShop the link below.\n\n{tags}",
+    ],
+    "Arts & Crafts": [
+        "Best craft supplies on Amazon for your next DIY project — {short_title}. {price_text}A top-rated pick for anyone who loves art, crafting, or creative projects. Ships fast and worth every penny.\nShop the link below.\n\n{tags}",
+        "Amazon craft find that makers actually love — {short_title}. {price_text}Thousands of crafters rate this one highly. Great for beginners and experienced makers alike.\nShop the link below.\n\n{tags}",
+        "Top-rated art supply on Amazon — {short_title}. {price_text}Whether you're starting a new hobby or stocking your craft space, this is a must-have. Real reviews, real results.\nShop the link below.\n\n{tags}",
+    ],
+    "Pet Supplies": [
+        "Best Amazon find for dog and cat owners — {short_title}. {price_text}One of the top-rated pet products on Amazon right now. Your fur baby will love it — and your wallet will too.\nShop the link below.\n\n{tags}",
+        "Amazon pet essential that owners swear by — {short_title}. {price_text}Trusted by thousands of pet parents with rave reviews. A practical pick that makes pet care genuinely easier.\nShop the link below.\n\n{tags}",
+        "Top-selling Amazon pet find right now — {short_title}. {price_text}Pet owners keep coming back to this one. Quality product at a price that makes sense for everyday use.\nShop the link below.\n\n{tags}",
     ],
     "Clothing & Fashion": [
-        "Style find of the day 👗 {title} is trending in Clothing & Fashion on Amazon Canada. {price_text}Affordable fashion, fast shipping 👇\n\n{tags}",
-        "Fashion hack alert 💅 {title} — one of Amazon Canada's best-selling fashion finds. {price_text}Look great for less. Prime shipping available 👇\n\n{tags}",
-        "Your next wardrobe essential ✨ {title} is a top seller on Amazon Canada. {price_text}Tap to shop before it's gone 👇\n\n{tags}",
+        "Affordable Amazon fashion find people are obsessed with — {short_title}. {price_text}One of the top-rated clothing picks on Amazon right now. Stylish, comfortable, and ships fast.\nShop the link below.\n\n{tags}",
+        "Amazon wardrobe essential worth adding right now — {short_title}. {price_text}Thousands of shoppers love this one. Great quality at a price that works for any budget.\nShop the link below.\n\n{tags}",
+        "Best-selling Amazon fashion find — {short_title}. {price_text}A versatile piece that works for everyday wear. High ratings, honest reviews, fast delivery.\nShop the link below.\n\n{tags}",
+    ],
+    "Baby & Nursery": [
+        "Newborn must-have from Amazon that parents swear by — {short_title}. {price_text}A top-rated pick for new parents with thousands of five-star reviews. Makes a perfect baby shower gift too.\nShop the link below.\n\n{tags}",
+        "Best baby shower gift idea on Amazon right now — {short_title}. {price_text}One of the best-selling baby products on Amazon. Trusted by thousands of new moms and dads who buy it again and again.\nShop the link below.\n\n{tags}",
+        "Nursery essential from Amazon every new parent needs — {short_title}. {price_text}A practical, top-rated pick that actually makes early parenthood easier. High quality and great value.\nShop the link below.\n\n{tags}",
     ],
     "Sports & Fitness": [
-        "💪 Level up your fitness routine! {title} is one of Amazon Canada's best-selling fitness products. {price_text}Perfect for home workouts or the gym 👇\n\n{tags}",
-        "Your next fitness essential 🏃 {title} — top seller in Sports & Fitness on Amazon Canada. {price_text}High ratings, fast delivery. Crush your goals!\n\n{tags}",
-        "Build your home gym for less 🔥 {title} is trending on Amazon Canada best sellers. {price_text}Trusted by fitness lovers across Canada 👇\n\n{tags}",
+        "Home gym essential from Amazon worth the investment — {short_title}. {price_text}One of the top-rated fitness products on Amazon right now. Level up your workouts without breaking the bank.\nShop the link below.\n\n{tags}",
+        "Best workout gear find on Amazon — {short_title}. {price_text}Thousands of fitness lovers rate this one highly. Practical, durable, and worth adding to your routine.\nShop the link below.\n\n{tags}",
+        "Amazon fitness find that delivers on its promise — {short_title}. {price_text}A top seller in Sports & Fitness for good reason. Reliable gear at a price that makes sense.\nShop the link below.\n\n{tags}",
     ],
     "Tools & Home Improvement": [
-        "🔧 DIY essential — {title} is one of Amazon Canada's best-selling tools. {price_text}Perfect for home projects. Highly rated, ships fast 👇\n\n{tags}",
-        "Home upgrade hack 🏠 {title} — top-rated in Tools & Home Improvement on Amazon Canada. {price_text}Every homeowner needs this 👇\n\n{tags}",
-        "Best-selling DIY tool on Amazon Canada ⭐ {title}. {price_text}Trusted by thousands of Canadians. Tap to shop 👇\n\n{tags}",
+        "Best Amazon tool for DIY projects and home repairs — {short_title}. {price_text}A top-rated pick for homeowners and weekend warriors. Practical, reliable, and priced right.\nShop the link below.\n\n{tags}",
+        "Home improvement essential from Amazon — {short_title}. {price_text}One of the highest-rated tools on Amazon with thousands of verified reviews. Every homeowner needs this in their kit.\nShop the link below.\n\n{tags}",
+        "Amazon DIY find worth every penny — {short_title}. {price_text}Whether you're renovating or doing quick repairs, this tool delivers. Highly rated, fast shipping.\nShop the link below.\n\n{tags}",
+    ],
+    "Outdoor & Patio": [
+        "Backyard upgrade find from Amazon people love — {short_title}. {price_text}One of the top-rated outdoor and patio products right now. Transform your outdoor space without spending a fortune.\nShop the link below.\n\n{tags}",
+        "Amazon outdoor essential worth buying this season — {short_title}. {price_text}Thousands of happy customers love this patio and garden pick. Great quality at a price that works.\nShop the link below.\n\n{tags}",
+        "Best patio find on Amazon right now — {short_title}. {price_text}A top seller in Outdoor & Patio for a reason. Perfect for upgrading your backyard or balcony.\nShop the link below.\n\n{tags}",
     ],
     "Electronics": [
-        "⚡ Tech deal of the day — {title} is one of Amazon Canada's best-selling electronics. {price_text}Must-have gadget, top-rated. Tap to shop 👇\n\n{tags}",
-        "Smart tech find 💻 {title} — currently a top seller in Electronics on Amazon Canada. {price_text}Great reviews, fast delivery 👇\n\n{tags}",
-        "Upgrade your tech game 🔌 {title} is trending on Amazon Canada electronics best sellers. {price_text}Highly rated, ships fast!\n\n{tags}",
+        "Best Amazon tech find worth buying right now — {short_title}. {price_text}A top-rated gadget with thousands of verified reviews. Practical, well-designed, and genuinely worth the price.\nShop the link below.\n\n{tags}",
+        "Amazon gadget that's worth adding to your setup — {short_title}. {price_text}One of the highest-rated electronics on Amazon right now. A real upgrade without the premium price tag.\nShop the link below.\n\n{tags}",
+        "Smart home and tech find from Amazon — {short_title}. {price_text}Loved by thousands for its performance and value. A tech upgrade you won't regret.\nShop the link below.\n\n{tags}",
     ],
     "Health & Household": [
-        "💚 Health essential everyone needs — {title} is a top-selling product on Amazon Canada. {price_text}Trusted by thousands. Ships fast 👇\n\n{tags}",
-        "Daily wellness essential 🌿 {title} — best seller in Health & Household on Amazon Canada. {price_text}Simple upgrade, big impact 👇\n\n{tags}",
-        "Amazon Canada's top pick for healthy living ✨ {title}. {price_text}Thousands of 5-star reviews. Fast delivery 👇\n\n{tags}",
+        "Wellness essential from Amazon that's actually worth trying — {short_title}. {price_text}A top-rated health and household pick with thousands of five-star reviews. Simple addition, real results.\nShop the link below.\n\n{tags}",
+        "Amazon health find that lives up to the hype — {short_title}. {price_text}One of the best-selling wellness products on Amazon right now. Trusted by thousands for daily use.\nShop the link below.\n\n{tags}",
+        "Daily wellness must-have from Amazon — {short_title}. {price_text}High ratings, quality ingredients, and a price that makes sense. A household essential worth keeping stocked.\nShop the link below.\n\n{tags}",
+    ],
+    "Office & Desk": [
+        "Home office essential from Amazon people love — {short_title}. {price_text}A top-rated pick for anyone working from home or leveling up their desk setup. Practical and well-reviewed.\nShop the link below.\n\n{tags}",
+        "Amazon desk setup find worth buying — {short_title}. {price_text}One of the highest-rated office products on Amazon. Boost your productivity with a workspace upgrade that actually delivers.\nShop the link below.\n\n{tags}",
+        "Work from home essential from Amazon — {short_title}. {price_text}Thousands of remote workers love this pick. A desk upgrade that has a real impact on your daily routine.\nShop the link below.\n\n{tags}",
     ],
     "Toys & Games": [
-        "🎁 Perfect gift idea! {title} is one of Amazon Canada's best-selling toys. {price_text}Kids absolutely love it! Fast shipping 👇\n\n{tags}",
-        "Top-rated toy on Amazon Canada 🌟 {title}. {price_text}A must-have for kids! Thousands of happy customers 👇\n\n{tags}",
-        "Gift idea found 🎉 {title} — best selling in Toys & Games on Amazon Canada. {price_text}Fast shipping. Tap the link to order 👇\n\n{tags}",
+        "Best Amazon toy for kids that parents actually recommend — {short_title}. {price_text}A top-rated pick with thousands of happy reviews. Perfect for birthdays, holidays, or just because.\nShop the link below.\n\n{tags}",
+        "Kids gift idea from Amazon they'll actually use — {short_title}. {price_text}One of the best-selling toys on Amazon right now. Fun, engaging, and worth every penny.\nShop the link below.\n\n{tags}",
+        "Top-rated Amazon toy and game find — {short_title}. {price_text}A family favorite with thousands of five-star reviews. Great for kids of all ages, ships fast.\nShop the link below.\n\n{tags}",
     ],
 }
 
 _DEFAULT_TEMPLATES = [
-    "🌟 {title} — one of Amazon Canada's best-selling products. {price_text}Highly rated, fast shipping 👇\n\n{tags}",
-    "Top-rated Amazon Canada find ✨ {title}. {price_text}Loved by thousands. Free delivery available 👇\n\n{tags}",
-    "Amazon Canada's best seller 🔥 {title}. {price_text}Fast shipping, easy returns 👇\n\n{tags}",
+    "Top-rated Amazon find worth knowing about — {short_title}. {price_text}One of the best-selling products on Amazon right now with thousands of verified reviews.\nShop the link below.\n\n{tags}",
+    "Amazon find worth buying — {short_title}. {price_text}Highly rated, practical, and priced right. A product that delivers on its promise every time.\nShop the link below.\n\n{tags}",
+    "Best-selling Amazon essential — {short_title}. {price_text}Trusted by thousands of shoppers with top-rated reviews. Fast shipping and easy returns.\nShop the link below.\n\n{tags}",
 ]
 
 
+def _clean_title(raw: str) -> str:
+    """Strip Amazon variant/model noise, return a short readable product name."""
+    for sep in [" - ", " | ", ", "]:
+        if sep in raw:
+            raw = raw.split(sep)[0].strip()
+            break
+    if len(raw) > 60:
+        raw = raw[:60].rsplit(" ", 1)[0].strip()
+    return raw.rstrip(",.:")
+
+
+def _build_pin_title(product: dict, template_key: str) -> str:
+    """Build a Pinterest-optimised title: clean product name + category suffix."""
+    short = _clean_title(product["title"])
+    suffix = _TITLE_SUFFIX.get(template_key, "| Amazon Find")
+    return f"{short} {suffix}"[:100]
+
+
 def _build_description(product: dict, hashtags: list[str], template_key: str) -> str:
-    price_text = f"Only {product['price']}. " if product.get("price") else ""
-    tags       = " ".join(hashtags[:15])
-    title      = product["title"][:120]
-    variants   = _TEMPLATES.get(template_key, _DEFAULT_TEMPLATES)
-    return random.choice(variants).format(title=title, price_text=price_text, tags=tags)
-
-
-def _download_image(url: str) -> str | None:
-    """Download Amazon product image to a temp file. Returns file path or None."""
-    try:
-        headers = {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) Chrome/124.0.0.0"}
-        r = requests.get(url, headers=headers, timeout=20)
-        if r.status_code == 200 and len(r.content) > 2000:
-            tmp = tempfile.NamedTemporaryFile(delete=False, suffix=".jpg")
-            tmp.write(r.content)
-            tmp.close()
-            return tmp.name
-    except Exception as e:
-        print(f"    [!] Image download failed: {e}")
-    return None
+    price_text  = f"Only {product['price']}. " if product.get("price") else ""
+    tags        = " ".join(hashtags[:5])          # max 5 per CLAUDE.md rules
+    short_title = _clean_title(product["title"])
+    variants    = _TEMPLATES.get(template_key, _DEFAULT_TEMPLATES)
+    return random.choice(variants).format(
+        short_title=short_title,
+        price_text=price_text,
+        tags=tags,
+    )
 
 
 def _dismiss_popups(page):
@@ -118,19 +176,15 @@ def _login(page):
     time.sleep(2)
     _dismiss_popups(page)
 
-    # Email
     page.fill('input[name="id"]', PINTEREST_EMAIL)
     time.sleep(random.uniform(0.3, 0.7))
 
-    # Password
     page.fill('input[name="password"]', PINTEREST_PASSWORD)
     time.sleep(random.uniform(0.3, 0.7))
 
-    # Submit
     page.click('button[type="submit"]')
 
     try:
-        # Wait until we land somewhere other than /login/
         page.wait_for_url(lambda url: "/login/" not in url, timeout=20000)
         time.sleep(3)
         print("    [✓] Logged in to Pinterest")
@@ -167,15 +221,14 @@ def _click_first(page, selectors: list[str], timeout: int = 2000) -> bool:
     return False
 
 
-def _create_pin(page, product: dict, board_name: str, description: str) -> str | None:
+def _create_pin(page, product: dict, board_name: str, pin_title: str, description: str) -> str | None:
     """Create one pin. Returns pin URL on success, None on failure."""
-    image_path = _download_image(product["image_url"])
+    image_path = generate_pin_image(product)
     if not image_path:
-        print(f"  [x] Skipping — could not download image for: {product['title'][:50]}")
+        print(f"  [x] Skipping — image generation failed for: {product['title'][:50]}")
         return None
 
     try:
-        # Navigate with retry — Pinterest can be slow after creating a pin
         for attempt in range(3):
             try:
                 page.goto(
@@ -197,21 +250,20 @@ def _create_pin(page, product: dict, board_name: str, description: str) -> str |
         file_input = page.locator('input[type="file"]').first
         file_input.set_input_files(image_path)
         print(f"    Uploading image...")
-        # Wait for the title field to appear — confirms editing panel has loaded
         try:
             page.locator('[data-test-id="pin-draft-title"], input[placeholder*="title" i]').first.wait_for(
                 state="visible", timeout=15000
             )
         except PWTimeout:
-            time.sleep(6)   # fallback if title field selector doesn't match
+            time.sleep(6)
         _dismiss_popups(page)
 
-        # ── Title ─────────────────────────────────────────────────
+        # ── Title (Pinterest-optimised, not raw Amazon title) ─────
         _fill_field(page, [
             '[data-test-id="pin-draft-title"]',
             'input[placeholder*="title" i]',
             'input[aria-label*="title" i]',
-        ], product["title"][:100])
+        ], pin_title)
         time.sleep(0.5)
 
         # ── Description ───────────────────────────────────────────
@@ -233,7 +285,6 @@ def _create_pin(page, product: dict, board_name: str, description: str) -> str |
         time.sleep(0.5)
 
         # ── Board selector ────────────────────────────────────────
-        # Wait for page to settle after filling fields before touching the board dropdown
         time.sleep(1.5)
 
         board_opened = False
@@ -255,13 +306,11 @@ def _create_pin(page, product: dict, board_name: str, description: str) -> str |
             print(f"  [x] Could not open board selector for: {product['title'][:50]}")
             return None
 
-        # Wait for "All boards" header — confirms the dropdown loaded
         try:
             page.get_by_text("All boards").first.wait_for(state="visible", timeout=8000)
         except PWTimeout:
-            time.sleep(3)   # fallback wait
+            time.sleep(3)
 
-        # Type board name to filter the list
         try:
             search = page.locator('input[placeholder*="Search" i]').first
             if search.is_visible(timeout=2000):
@@ -272,12 +321,10 @@ def _create_pin(page, product: dict, board_name: str, description: str) -> str |
         except Exception:
             pass
 
-        # Click the board by its visible text — most reliable after Pinterest's UI changes
         try:
             page.get_by_text(board_name, exact=True).first.click(timeout=5000)
             print(f"    Board '{board_name}' selected")
         except Exception:
-            # Fallback: partial text match
             try:
                 page.get_by_text(board_name).first.click(timeout=3000)
                 print(f"    Board '{board_name}' selected (partial match)")
@@ -298,33 +345,31 @@ def _create_pin(page, product: dict, board_name: str, description: str) -> str |
             print(f"  [x] Could not find Publish button for: {product['title'][:50]}")
             return None
 
-        time.sleep(6)   # give Pinterest time to save and redirect
+        time.sleep(6)
 
-        # Layer 1: redirected directly to the pin page
+        # Layer 1: redirected directly to pin page
         current_url = page.url
         if re.search(r'/pin/\d{10,}', current_url):
             return current_url
 
         # Layer 2: scan all links on the page for a real pin URL
-        # Works for both www.pinterest.com and ca.pinterest.com
         try:
             for link in page.locator('a[href*="/pin/"]').all():
                 href = link.get_attribute("href") or ""
                 if re.search(r'/pin/\d{10,}', href):
                     if href.startswith("http"):
                         return href
-                    return f"https://ca.pinterest.com{href}"
+                    return f"https://www.pinterest.com{href}"
         except Exception:
             pass
 
-        # Layer 3: wait a bit more and re-check URL (some redirects are slow)
+        # Layer 3: wait and re-check URL
         time.sleep(4)
         current_url = page.url
         if re.search(r'/pin/\d{10,}', current_url):
             return current_url
 
-        # Layer 4: pin was posted but Pinterest didn't give us the URL
-        # Mark clearly so the sheet is honest — not a fake pinterest.com URL
+        # Layer 4: pin posted but URL not captured
         return f"posted_no_url_{int(time.time())}"
 
     except Exception as e:
@@ -363,16 +408,16 @@ def post_pins_for_category(
         )
         page = context.new_page()
 
-        # Login once per category batch
         if not _login(page):
             browser.close()
             return []
 
         for i, product in enumerate(products[:limit]):
             print(f"  [{i+1}/{min(len(products), limit)}] {product['title'][:60]}")
+            pin_title   = _build_pin_title(product, template_key)
             description = _build_description(product, hashtags, template_key)
 
-            pin_url = _create_pin(page, product, board_name, description)
+            pin_url = _create_pin(page, product, board_name, pin_title, description)
 
             if pin_url:
                 product["pin_url"] = pin_url

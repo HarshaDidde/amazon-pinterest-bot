@@ -3,7 +3,7 @@
 #  Daily cycle:
 #    1. Load deduplication list from Google Sheets
 #    2. Apply seasonal boost to daily_posts per category
-#    3. Crawl Amazon.ca best sellers per category
+#    3. Crawl Amazon.com best sellers per category
 #    4. Post new products as Pinterest pins (revenue-priority order)
 #    5. Log results back to Google Sheet
 #    6. Guarantee: if 0 pins posted, retry top-priority category once
@@ -35,7 +35,7 @@ def run():
     month = now.month
 
     print("=" * 65)
-    print(f"  Amazon.ca → Pinterest Bot  |  {now.strftime('%Y-%m-%d %H:%M')}")
+    print(f"  Amazon.com → Pinterest Bot  |  {now.strftime('%Y-%m-%d %H:%M')}")
     print(f"  Seasonal month: {now.strftime('%B')}  |  Max pins this run: {MAX_PINS_PER_RUN}")
     print("=" * 65)
 
@@ -65,7 +65,7 @@ def run():
 
         print(f"[→] {cat['name']}  (target: {limit} pins, commission: {cat['commission_rate']}%)")
 
-        # Crawl Amazon.ca — fetch extra to cover cooldown skips and dupes
+        # Crawl Amazon.com — fetch extra to cover cooldown skips and dupes
         fetch_n  = limit + 15
         products = fetch_best_sellers(cat["bestseller_url"], cat["name"], n=fetch_n)
 

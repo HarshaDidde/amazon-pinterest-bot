@@ -4,34 +4,32 @@
 #  IMPORTANT: This file must live at  .github/workflows/daily_post.yml
 #  inside your GitHub repository for Actions to pick it up.
 #
-#  Runs the Amazon → Pinterest bot DAILY at two times:
-#    • 3:30 AM  UTC  = 9:00  AM IST  (morning fresh-products run)
-#    • 15:30    UTC  = 9:00  PM IST  (evening high-traffic window)
+#  Runs the Amazon → Pinterest bot DAILY at two times optimised for
+#  US Pinterest peak traffic:
+#    • 14:00 UTC  = 09:00 AM EST / 10:00 AM EDT  (morning planning window)
+#    • 02:00 UTC  = 09:00 PM EST / 10:00 PM EDT  (peak evening scroll hour)
 #
 #  Required GitHub Secrets (repo → Settings → Secrets → Actions):
-#    AMAZON_ASSOCIATE_TAG      — e.g. "mystore-20"
-#    PINTEREST_ACCESS_TOKEN    — Pinterest API v5 Bearer token
+#    AMAZON_ASSOCIATE_TAG      — Amazon Associates US tag (e.g. "hd2170e-20")
+#    PINTEREST_EMAIL           — Pinterest US account login email
+#    PINTEREST_PASSWORD        — Pinterest US account login password
 #    GOOGLE_SHEET_ID           — Google Sheet ID for deduplication log
 #    GOOGLE_CREDENTIALS_JSON   — Full content of service-account JSON file
-#
-#  Optional board-ID secrets (recommended — keeps board IDs out of code):
-#    BOARD_ID_BEAUTY / BOARD_ID_HOME / BOARD_ID_FASHION / BOARD_ID_SPORTS
-#    BOARD_ID_TOOLS  / BOARD_ID_ELECTRONICS / BOARD_ID_HEALTH / BOARD_ID_TOYS
 # ─────────────────────────────────────────────────────────────────
 
 name: Daily Amazon → Pinterest Post
 
 on:
   schedule:
-    - cron: "30 3  * * *"    # 09:00 AM IST  — morning run
-    - cron: "30 15 * * *"    # 09:00 PM IST  — evening run
+    - cron: "0 14 * * *"    # 09:00 AM EST / 10:00 AM EDT — morning discovery
+    - cron: "0 2  * * *"    # 09:00 PM EST / 10:00 PM EDT — peak evening scroll
 
   workflow_dispatch:          # Manual trigger from GitHub UI (for testing)
 
 jobs:
   post-pins:
     runs-on: ubuntu-22.04
-    timeout-minutes: 45       # 8 categories × a few retries — stay well under
+    timeout-minutes: 60       # 13 categories × retries — padded for safety
 
     steps:
       - name: Checkout repository
@@ -58,11 +56,11 @@ jobs:
       - name: Run bot
         env:
           AMAZON_ASSOCIATE_TAG:     ${{ secrets.AMAZON_ASSOCIATE_TAG }}
-          PINTEREST_ACCESS_TOKEN:   ${{ secrets.PINTEREST_ACCESS_TOKEN }}
           GOOGLE_SHEET_ID:          ${{ secrets.GOOGLE_SHEET_ID }}
           GOOGLE_CREDENTIALS_JSON:  ${{ secrets.GOOGLE_CREDENTIALS_JSON }}
           PINTEREST_EMAIL:          ${{ secrets.PINTEREST_EMAIL }}
           PINTEREST_PASSWORD:       ${{ secrets.PINTEREST_PASSWORD }}
+          GOOGLE_AI_API_KEY:        ${{ secrets.GOOGLE_AI_API_KEY }}
         run: python main.py
 
       - name: Upload run log
@@ -73,4 +71,3 @@ jobs:
           path: "*.log"
           if-no-files-found: ignore
           retention-days: 14
-

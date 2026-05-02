@@ -1,6 +1,6 @@
 # ─────────────────────────────────────────────
 #  amazon_fetcher.py  (CRAWLER VERSION)
-#  Crawls Amazon.ca Best Sellers pages
+#  Crawls Amazon.com (US) Best Sellers pages
 #  No API key needed — uses httpx + BeautifulSoup
 # ─────────────────────────────────────────────
 
@@ -15,7 +15,7 @@ from config import AMAZON_ASSOCIATE_TAG
 
 PRODUCTS_PER_CATEGORY = 10   # fallback default; callers pass n= to override
 
-BASE_URL = "https://www.amazon.ca"
+BASE_URL = "https://www.amazon.com"
 
 USER_AGENTS = [
     "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36",
@@ -29,16 +29,16 @@ USER_AGENTS = [
 def _get_headers() -> dict:
     return {
         "User-Agent":      random.choice(USER_AGENTS),
-        "Accept-Language": "en-CA,en;q=0.9",
+        "Accept-Language": "en-US,en;q=0.9",
         "Accept":          "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8",
         "Accept-Encoding": "gzip, deflate, br",
-        "Referer":         "https://www.amazon.ca/",
+        "Referer":         "https://www.amazon.com/",
         "DNT":             "1",
     }
 
 
 def _build_affiliate_link(asin: str) -> str:
-    return f"https://www.amazon.ca/dp/{asin}?tag={AMAZON_ASSOCIATE_TAG}"
+    return f"https://www.amazon.com/dp/{asin}?tag={AMAZON_ASSOCIATE_TAG}"
 
 
 def _fetch_page(url: str, retries: int = 3) -> BeautifulSoup | None:
@@ -169,7 +169,7 @@ def _parse_bestsellers_page(soup: BeautifulSoup, category_name: str, limit: int 
 
 def fetch_best_sellers(bestseller_url: str, category_name: str, n: int = None) -> list[dict]:
     """
-    Crawls the given Amazon.ca Best Sellers URL.
+    Crawls the given Amazon.com Best Sellers URL.
     Returns up to n products (defaults to PRODUCTS_PER_CATEGORY).
     """
     limit = n or PRODUCTS_PER_CATEGORY
