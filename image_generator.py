@@ -142,19 +142,22 @@ def _generate_lifestyle_bg(product: dict) -> Image.Image | None:
     if not GOOGLE_AI_API_KEY:
         return None
     try:
-        import google.generativeai as genai  # optional dependency
+        from google import genai as google_genai        # google-genai package
+        from google.genai import types as genai_types
 
-        genai.configure(api_key=GOOGLE_AI_API_KEY)
+        client = google_genai.Client(api_key=GOOGLE_AI_API_KEY)
         prompt = _build_bg_prompt(product)
 
-        model  = genai.ImageGenerationModel("imagen-3.0-generate-001")
-        result = model.generate_images(
+        result = client.models.generate_images(
+            model="imagen-3.0-generate-001",
             prompt=prompt,
-            number_of_images=1,
-            aspect_ratio="3:4",   # portrait — closest to 1000×1500
+            config=genai_types.GenerateImagesConfig(
+                number_of_images=1,
+                aspect_ratio="3:4",   # portrait — closest to 1000×1500
+            ),
         )
-        if result.images:
-            raw = result.images[0].image.image_bytes
+        if result.generated_images:
+            raw = result.generated_images[0].image.image_bytes
             return Image.open(io.BytesIO(raw)).convert("RGB")
 
     except Exception as e:
@@ -301,7 +304,7 @@ def _render(product: dict) -> tuple[Image.Image, str] | None:
         return None
 
     sw, sh = prod_img.size
-    if min(sw, sh) < 400:
+    if max(sw, sh) < 400:
         print(f"    [!] Source image too small ({sw}×{sh}) — skipping")
         return None
 

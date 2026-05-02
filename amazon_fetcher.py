@@ -149,7 +149,7 @@ def _parse_bestsellers_page(soup: BeautifulSoup, category_name: str, limit: int 
                 continue
 
             # Upgrade to high-res
-            image_url = re.sub(r"\._[A-Z0-9_,]+_\.", "._AC_SL500_.", image_url)
+            image_url = re.sub(r"\._[A-Z0-9_,]+_\.", "._AC_SL1500_.", image_url)
 
             products.append({
                 "asin":           asin,
