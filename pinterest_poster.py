@@ -50,76 +50,76 @@ _TITLE_SUFFIX = {
 # ─────────────────────────────────────────────────────────────────────────────
 _TEMPLATES = {
     "Beauty & Personal Care": [
-        "Top-rated Amazon skincare find — {short_title}. {price_text}Thousands of five-star reviews and a staple in beauty routines across the US. A simple addition that actually delivers results.\nShop the link below.\n\n{tags}",
-        "Best-selling Amazon beauty essential — {short_title}. {price_text}One of the most loved picks in Beauty & Personal Care right now. Whether for yourself or as a gift, this one is worth it.\nShop the link below.\n\n{tags}",
-        "Affordable Amazon beauty find that lives up to the hype — {short_title}. {price_text}High-quality formula, real results, and a price that makes sense. This keeps selling out for a reason.\nShop the link below.\n\n{tags}",
+        "Best Amazon beauty finds right now — {short_title}. {price_text}{aesthetic} Thousands of five-star reviews. A simple addition that actually delivers.\nShop the link below.\n\n{tags}",
+        "Amazon skincare must haves — {short_title}. {price_text}{aesthetic} One of the most loved picks in beauty right now. Worth every penny.\nShop the link below.\n\n{tags}",
+        "Amazon beauty finds that actually work — {short_title}. {price_text}{aesthetic} Real results, honest reviews, and a price that makes sense.\nShop the link below.\n\n{tags}",
     ],
     "Home & Kitchen": [
-        "Kitchen organization find from Amazon worth every penny — {short_title}. {price_text}One of the highest-rated picks in Home & Kitchen right now. A small upgrade that makes a real difference.\nShop the link below.\n\n{tags}",
-        "Amazon home essential everyone is buying right now — {short_title}. {price_text}Practical, well-reviewed, and priced right. Exactly the home upgrade you didn't know you needed.\nShop the link below.\n\n{tags}",
-        "Best-selling Amazon home find — {short_title}. {price_text}Trusted by thousands of happy customers. Fast shipping and easy returns make this a no-brainer.\nShop the link below.\n\n{tags}",
+        "Amazon kitchen must haves — {short_title}. {price_text}{aesthetic} One of the highest-rated home picks right now. A small upgrade that makes a real difference.\nShop the link below.\n\n{tags}",
+        "Amazon home finds worth buying — {short_title}. {price_text}{aesthetic} Practical, well-reviewed, and priced right. Exactly the upgrade you didn't know you needed.\nShop the link below.\n\n{tags}",
+        "Best Amazon home gadgets right now — {short_title}. {price_text}{aesthetic} Trusted by thousands. Fast shipping and easy returns.\nShop the link below.\n\n{tags}",
     ],
     "Arts & Crafts": [
-        "Best craft supplies on Amazon for your next DIY project — {short_title}. {price_text}A top-rated pick for anyone who loves art, crafting, or creative projects. Ships fast and worth every penny.\nShop the link below.\n\n{tags}",
-        "Amazon craft find that makers actually love — {short_title}. {price_text}Thousands of crafters rate this one highly. Great for beginners and experienced makers alike.\nShop the link below.\n\n{tags}",
-        "Top-rated art supply on Amazon — {short_title}. {price_text}Whether you're starting a new hobby or stocking your craft space, this is a must-have. Real reviews, real results.\nShop the link below.\n\n{tags}",
+        "Best craft supplies on Amazon for DIY projects — {short_title}. {price_text}{aesthetic} Top-rated by makers and beginners alike. Ships fast.\nShop the link below.\n\n{tags}",
+        "Amazon craft finds that makers love — {short_title}. {price_text}{aesthetic} Thousands of crafters rate this one highly. Stock your creative space right.\nShop the link below.\n\n{tags}",
+        "Amazon art supplies worth buying — {short_title}. {price_text}{aesthetic} Whether you're starting a new hobby or restocking, this one delivers.\nShop the link below.\n\n{tags}",
     ],
     "Pet Supplies": [
-        "Best Amazon find for dog and cat owners — {short_title}. {price_text}One of the top-rated pet products on Amazon right now. Your fur baby will love it — and your wallet will too.\nShop the link below.\n\n{tags}",
-        "Amazon pet essential that owners swear by — {short_title}. {price_text}Trusted by thousands of pet parents with rave reviews. A practical pick that makes pet care genuinely easier.\nShop the link below.\n\n{tags}",
-        "Top-selling Amazon pet find right now — {short_title}. {price_text}Pet owners keep coming back to this one. Quality product at a price that makes sense for everyday use.\nShop the link below.\n\n{tags}",
+        "Best Amazon finds for dog and cat owners — {short_title}. {price_text}{aesthetic} One of the top-rated pet picks on Amazon. Your fur baby will love it.\nShop the link below.\n\n{tags}",
+        "Amazon pet essentials owners swear by — {short_title}. {price_text}{aesthetic} Trusted by thousands of pet parents. Makes daily pet care genuinely easier.\nShop the link below.\n\n{tags}",
+        "Amazon pet finds worth every penny — {short_title}. {price_text}{aesthetic} Pet owners keep coming back to this one. Great quality, great price.\nShop the link below.\n\n{tags}",
     ],
     "Clothing & Fashion": [
-        "Affordable Amazon fashion find people are obsessed with — {short_title}. {price_text}One of the top-rated clothing picks on Amazon right now. Stylish, comfortable, and ships fast.\nShop the link below.\n\n{tags}",
-        "Amazon wardrobe essential worth adding right now — {short_title}. {price_text}Thousands of shoppers love this one. Great quality at a price that works for any budget.\nShop the link below.\n\n{tags}",
-        "Best-selling Amazon fashion find — {short_title}. {price_text}A versatile piece that works for everyday wear. High ratings, honest reviews, fast delivery.\nShop the link below.\n\n{tags}",
+        "Affordable Amazon fashion finds people are obsessed with — {short_title}. {price_text}{aesthetic} Top-rated, stylish, and ships fast.\nShop the link below.\n\n{tags}",
+        "Amazon wardrobe essentials worth adding — {short_title}. {price_text}{aesthetic} Thousands of shoppers love this one. Great quality for any budget.\nShop the link below.\n\n{tags}",
+        "Amazon fashion finds that actually look good — {short_title}. {price_text}{aesthetic} Versatile, well-reviewed, and genuinely worth it.\nShop the link below.\n\n{tags}",
     ],
     "Baby & Nursery": [
-        "Newborn must-have from Amazon that parents swear by — {short_title}. {price_text}A top-rated pick for new parents with thousands of five-star reviews. Makes a perfect baby shower gift too.\nShop the link below.\n\n{tags}",
-        "Best baby shower gift idea on Amazon right now — {short_title}. {price_text}One of the best-selling baby products on Amazon. Trusted by thousands of new moms and dads who buy it again and again.\nShop the link below.\n\n{tags}",
-        "Nursery essential from Amazon every new parent needs — {short_title}. {price_text}A practical, top-rated pick that actually makes early parenthood easier. High quality and great value.\nShop the link below.\n\n{tags}",
+        "Amazon baby must haves new parents swear by — {short_title}. {price_text}{aesthetic} Thousands of five-star reviews. Makes a perfect baby shower gift.\nShop the link below.\n\n{tags}",
+        "Best baby shower gift ideas on Amazon — {short_title}. {price_text}{aesthetic} One of the best-selling baby picks on Amazon. Parents buy it again and again.\nShop the link below.\n\n{tags}",
+        "Nursery essentials from Amazon every new parent needs — {short_title}. {price_text}{aesthetic} Practical, top-rated, and actually makes early parenthood easier.\nShop the link below.\n\n{tags}",
     ],
     "Sports & Fitness": [
-        "Home gym essential from Amazon worth the investment — {short_title}. {price_text}One of the top-rated fitness products on Amazon right now. Level up your workouts without breaking the bank.\nShop the link below.\n\n{tags}",
-        "Best workout gear find on Amazon — {short_title}. {price_text}Thousands of fitness lovers rate this one highly. Practical, durable, and worth adding to your routine.\nShop the link below.\n\n{tags}",
-        "Amazon fitness find that delivers on its promise — {short_title}. {price_text}A top seller in Sports & Fitness for good reason. Reliable gear at a price that makes sense.\nShop the link below.\n\n{tags}",
+        "Amazon fitness finds worth the investment — {short_title}. {price_text}{aesthetic} One of the top-rated workout picks on Amazon. Level up without breaking the bank.\nShop the link below.\n\n{tags}",
+        "Best workout gear on Amazon right now — {short_title}. {price_text}{aesthetic} Thousands of fitness lovers rate this highly. Practical and built to last.\nShop the link below.\n\n{tags}",
+        "Amazon home gym essentials that actually deliver — {short_title}. {price_text}{aesthetic} A top seller in fitness for good reason. Reliable gear at the right price.\nShop the link below.\n\n{tags}",
     ],
     "Tools & Home Improvement": [
-        "Best Amazon tool for DIY projects and home repairs — {short_title}. {price_text}A top-rated pick for homeowners and weekend warriors. Practical, reliable, and priced right.\nShop the link below.\n\n{tags}",
-        "Home improvement essential from Amazon — {short_title}. {price_text}One of the highest-rated tools on Amazon with thousands of verified reviews. Every homeowner needs this in their kit.\nShop the link below.\n\n{tags}",
-        "Amazon DIY find worth every penny — {short_title}. {price_text}Whether you're renovating or doing quick repairs, this tool delivers. Highly rated, fast shipping.\nShop the link below.\n\n{tags}",
+        "Best Amazon tools for DIY and home repairs — {short_title}. {price_text}{aesthetic} Top-rated by homeowners and weekend warriors. Practical and priced right.\nShop the link below.\n\n{tags}",
+        "Amazon home improvement finds worth having — {short_title}. {price_text}{aesthetic} Thousands of verified reviews. Every homeowner needs this in their kit.\nShop the link below.\n\n{tags}",
+        "Amazon DIY finds worth every penny — {short_title}. {price_text}{aesthetic} Renovating or doing quick repairs — this tool delivers every time.\nShop the link below.\n\n{tags}",
     ],
     "Outdoor & Patio": [
-        "Backyard upgrade find from Amazon people love — {short_title}. {price_text}One of the top-rated outdoor and patio products right now. Transform your outdoor space without spending a fortune.\nShop the link below.\n\n{tags}",
-        "Amazon outdoor essential worth buying this season — {short_title}. {price_text}Thousands of happy customers love this patio and garden pick. Great quality at a price that works.\nShop the link below.\n\n{tags}",
-        "Best patio find on Amazon right now — {short_title}. {price_text}A top seller in Outdoor & Patio for a reason. Perfect for upgrading your backyard or balcony.\nShop the link below.\n\n{tags}",
+        "Amazon outdoor finds for your backyard upgrade — {short_title}. {price_text}{aesthetic} One of the top-rated patio picks right now. Transform your space for less.\nShop the link below.\n\n{tags}",
+        "Amazon patio essentials worth buying this season — {short_title}. {price_text}{aesthetic} Thousands of happy customers. Great quality at a price that works.\nShop the link below.\n\n{tags}",
+        "Best outdoor finds on Amazon right now — {short_title}. {price_text}{aesthetic} A top seller in patio and garden. Perfect for any outdoor space.\nShop the link below.\n\n{tags}",
     ],
     "Electronics": [
-        "Best Amazon tech find worth buying right now — {short_title}. {price_text}A top-rated gadget with thousands of verified reviews. Practical, well-designed, and genuinely worth the price.\nShop the link below.\n\n{tags}",
-        "Amazon gadget that's worth adding to your setup — {short_title}. {price_text}One of the highest-rated electronics on Amazon right now. A real upgrade without the premium price tag.\nShop the link below.\n\n{tags}",
-        "Smart home and tech find from Amazon — {short_title}. {price_text}Loved by thousands for its performance and value. A tech upgrade you won't regret.\nShop the link below.\n\n{tags}",
+        "Best Amazon tech finds worth buying — {short_title}. {price_text}{aesthetic} Top-rated with thousands of verified reviews. Genuinely worth the price.\nShop the link below.\n\n{tags}",
+        "Amazon gadgets that are worth adding to your setup — {short_title}. {price_text}{aesthetic} One of the highest-rated electronics on Amazon. Real upgrade, fair price.\nShop the link below.\n\n{tags}",
+        "Amazon tech finds people actually love — {short_title}. {price_text}{aesthetic} Loved for its performance and value. A tech pick you won't regret.\nShop the link below.\n\n{tags}",
     ],
     "Health & Household": [
-        "Wellness essential from Amazon that's actually worth trying — {short_title}. {price_text}A top-rated health and household pick with thousands of five-star reviews. Simple addition, real results.\nShop the link below.\n\n{tags}",
-        "Amazon health find that lives up to the hype — {short_title}. {price_text}One of the best-selling wellness products on Amazon right now. Trusted by thousands for daily use.\nShop the link below.\n\n{tags}",
-        "Daily wellness must-have from Amazon — {short_title}. {price_text}High ratings, quality ingredients, and a price that makes sense. A household essential worth keeping stocked.\nShop the link below.\n\n{tags}",
+        "Amazon wellness finds actually worth trying — {short_title}. {price_text}{aesthetic} Thousands of five-star reviews. A simple addition with real results.\nShop the link below.\n\n{tags}",
+        "Amazon health finds that live up to the hype — {short_title}. {price_text}{aesthetic} One of the best-selling wellness picks right now. Trusted for daily use.\nShop the link below.\n\n{tags}",
+        "Daily wellness must haves from Amazon — {short_title}. {price_text}{aesthetic} Quality you can feel, price that makes sense. Worth keeping stocked.\nShop the link below.\n\n{tags}",
     ],
     "Office & Desk": [
-        "Home office essential from Amazon people love — {short_title}. {price_text}A top-rated pick for anyone working from home or leveling up their desk setup. Practical and well-reviewed.\nShop the link below.\n\n{tags}",
-        "Amazon desk setup find worth buying — {short_title}. {price_text}One of the highest-rated office products on Amazon. Boost your productivity with a workspace upgrade that actually delivers.\nShop the link below.\n\n{tags}",
-        "Work from home essential from Amazon — {short_title}. {price_text}Thousands of remote workers love this pick. A desk upgrade that has a real impact on your daily routine.\nShop the link below.\n\n{tags}",
+        "Amazon home office finds people love — {short_title}. {price_text}{aesthetic} Top-rated for anyone working from home or upgrading their desk setup.\nShop the link below.\n\n{tags}",
+        "Amazon desk setup finds worth buying — {short_title}. {price_text}{aesthetic} One of the highest-rated office picks. A workspace upgrade that actually delivers.\nShop the link below.\n\n{tags}",
+        "Work from home essentials on Amazon — {short_title}. {price_text}{aesthetic} Thousands of remote workers love this. Real impact on your daily routine.\nShop the link below.\n\n{tags}",
     ],
     "Toys & Games": [
-        "Best Amazon toy for kids that parents actually recommend — {short_title}. {price_text}A top-rated pick with thousands of happy reviews. Perfect for birthdays, holidays, or just because.\nShop the link below.\n\n{tags}",
-        "Kids gift idea from Amazon they'll actually use — {short_title}. {price_text}One of the best-selling toys on Amazon right now. Fun, engaging, and worth every penny.\nShop the link below.\n\n{tags}",
-        "Top-rated Amazon toy and game find — {short_title}. {price_text}A family favorite with thousands of five-star reviews. Great for kids of all ages, ships fast.\nShop the link below.\n\n{tags}",
+        "Best Amazon gift ideas for kids parents actually recommend — {short_title}. {price_text}{aesthetic} Thousands of happy reviews. Perfect for birthdays or holidays.\nShop the link below.\n\n{tags}",
+        "Amazon kids gift ideas they will actually use — {short_title}. {price_text}{aesthetic} One of the best-selling toys on Amazon. Fun, engaging, worth every penny.\nShop the link below.\n\n{tags}",
+        "Top-rated Amazon toys and games — {short_title}. {price_text}{aesthetic} A family favourite with five-star reviews. Great for all ages, ships fast.\nShop the link below.\n\n{tags}",
     ],
 }
 
 _DEFAULT_TEMPLATES = [
-    "Top-rated Amazon find worth knowing about — {short_title}. {price_text}One of the best-selling products on Amazon right now with thousands of verified reviews.\nShop the link below.\n\n{tags}",
-    "Amazon find worth buying — {short_title}. {price_text}Highly rated, practical, and priced right. A product that delivers on its promise every time.\nShop the link below.\n\n{tags}",
-    "Best-selling Amazon essential — {short_title}. {price_text}Trusted by thousands of shoppers with top-rated reviews. Fast shipping and easy returns.\nShop the link below.\n\n{tags}",
+    "Top-rated Amazon find worth knowing — {short_title}. {price_text}{aesthetic} Thousands of verified reviews.\nShop the link below.\n\n{tags}",
+    "Amazon find worth buying — {short_title}. {price_text}{aesthetic} Highly rated, practical, priced right.\nShop the link below.\n\n{tags}",
+    "Best-selling Amazon essential — {short_title}. {price_text}{aesthetic} Trusted by thousands of shoppers.\nShop the link below.\n\n{tags}",
 ]
 
 
@@ -134,22 +134,174 @@ def _clean_title(raw: str) -> str:
     return raw.rstrip(",.:")
 
 
+# ── Category short labels used in hook titles ──────────────────────────────
+_CAT_SHORT = {
+    "Beauty & Personal Care":   "beauty",
+    "Home & Kitchen":           "kitchen",
+    "Arts & Crafts":            "craft",
+    "Pet Supplies":             "pet",
+    "Clothing & Fashion":       "fashion",
+    "Baby & Nursery":           "baby",
+    "Sports & Fitness":         "fitness",
+    "Tools & Home Improvement": "home",
+    "Outdoor & Patio":          "outdoor",
+    "Electronics":              "tech",
+    "Health & Household":       "wellness",
+    "Office & Desk":            "desk",
+    "Toys & Games":             "gift",
+}
+
+
+def _parse_price_dollars(price_str: str) -> float | None:
+    """Extract numeric dollar amount from a price string like '$12.99'."""
+    import re as _re
+    m = _re.search(r"[\d]+\.?\d*", price_str.replace(",", ""))
+    return float(m.group()) if m else None
+
+
 def _build_pin_title(product: dict, template_key: str) -> str:
-    """Build a Pinterest-optimised title: clean product name + category suffix."""
-    short = _clean_title(product["title"])
-    suffix = _TITLE_SUFFIX.get(template_key, "| Amazon Find")
-    return f"{short} {suffix}"[:100]
+    """
+    Hook-first title formula (per CLAUDE.md):
+    - Under $15: price-led hook — "$9 Amazon beauty find everyone is buying"
+    - $15–$50:   value hook    — "Amazon's most-repurchased kitchen find: {title}"
+    - No price:  search hook  — "Most-saved Amazon {cat} find right now"
+    Keeps title under 100 characters.
+    """
+    short    = _clean_title(product["title"])
+    cat      = _CAT_SHORT.get(template_key, "find")
+    price    = product.get("price", "")
+    dollars  = _parse_price_dollars(price) if price else None
+
+    if dollars is not None and dollars < 15:
+        templates = [
+            f"{price} Amazon {cat} find everyone is buying — {short}",
+            f"Under {price}: {short}",
+            f"{short} — only {price} on Amazon",
+        ]
+    elif dollars is not None:
+        templates = [
+            f"{short} — the {cat} upgrade worth every penny",
+            f"Amazon's most-repurchased {cat} find: {short}",
+            f"{short} | {price} · Amazon bestseller",
+        ]
+    else:
+        templates = [
+            f"Most-saved Amazon {cat} find right now — {short}",
+            f"{short} | Top-rated Amazon {cat} pick",
+        ]
+
+    return random.choice(templates)[:100]
+
+
+# ── Aesthetic/trend lines per category ────────────────────────────────────
+# One phrase per pin that connects the product to a Pinterest identity.
+# Rotated randomly. Keeps pins feeling human, not algorithmic.
+_AESTHETICS: dict[str, list[str]] = {
+    "Beauty & Personal Care": [
+        "Clean girl routine essential.",
+        "Your glow-up starts here.",
+        "Minimal skincare, maximum results.",
+        "That girl approved.",
+        "Self-care shelf staple.",
+    ],
+    "Home & Kitchen": [
+        "Cosy kitchen upgrade.",
+        "Cottagecore kitchen staple.",
+        "That organized home aesthetic.",
+        "Clean kitchen, clear mind.",
+        "Neutral home essentials.",
+    ],
+    "Arts & Crafts": [
+        "Crafty girl must-have.",
+        "Creative space essential.",
+        "DIY season starts now.",
+        "For the maker in you.",
+        "Aesthetic craft supplies.",
+    ],
+    "Pet Supplies": [
+        "Because they deserve the best.",
+        "Pet parent approved.",
+        "Fur baby essentials.",
+        "Dog mom / cat mom must-have.",
+        "Spoil them a little.",
+    ],
+    "Clothing & Fashion": [
+        "Quiet luxury vibes.",
+        "Old money wardrobe essential.",
+        "Effortless everyday style.",
+        "That put-together look.",
+        "Coastal grandmother approved.",
+    ],
+    "Baby & Nursery": [
+        "Nursery aesthetic goals.",
+        "New mama must-have.",
+        "Soft life for your little one.",
+        "Boho nursery essential.",
+        "Perfect baby shower gift idea.",
+    ],
+    "Sports & Fitness": [
+        "That girl workout essential.",
+        "Fitness era starts now.",
+        "Home gym must-have.",
+        "Healthy girl lifestyle.",
+        "Move more, stress less.",
+    ],
+    "Tools & Home Improvement": [
+        "DIY home era.",
+        "Weekend project ready.",
+        "That handyman aesthetic.",
+        "Home renovation essential.",
+        "Fix it, own it.",
+    ],
+    "Outdoor & Patio": [
+        "Backyard goals.",
+        "Outdoor living aesthetic.",
+        "Al fresco season essential.",
+        "Patio glow-up incoming.",
+        "Garden girl approved.",
+    ],
+    "Electronics": [
+        "Minimal tech setup.",
+        "Dark academia desk essential.",
+        "Clean tech aesthetic.",
+        "Work smarter, not harder.",
+        "Tech that actually makes sense.",
+    ],
+    "Health & Household": [
+        "Wellness era essentials.",
+        "Healthy home, healthy life.",
+        "Clean living staple.",
+        "Gut health girl approved.",
+        "Soft life wellness pick.",
+    ],
+    "Office & Desk": [
+        "Aesthetic desk setup.",
+        "That girl home office.",
+        "Productive space, clear mind.",
+        "Work from home upgrade.",
+        "Minimal desk, maximum focus.",
+    ],
+    "Toys & Games": [
+        "The gift they'll actually use.",
+        "Screen-free fun approved.",
+        "Birthday gift sorted.",
+        "Kids will love it, parents will too.",
+        "Holiday gift idea locked in.",
+    ],
+}
 
 
 def _build_description(product: dict, hashtags: list[str], template_key: str) -> str:
     price_text  = f"Only {product['price']}. " if product.get("price") else ""
     tags        = " ".join(hashtags[:5])          # max 5 per CLAUDE.md rules
     short_title = _clean_title(product["title"])
+    aesthetic   = random.choice(_AESTHETICS.get(template_key, ["Amazon find worth knowing."]))
     variants    = _TEMPLATES.get(template_key, _DEFAULT_TEMPLATES)
     return random.choice(variants).format(
         short_title=short_title,
         price_text=price_text,
         tags=tags,
+        aesthetic=aesthetic,
     )
 
 

@@ -18,15 +18,33 @@ from PIL import Image, ImageDraw, ImageFont, ImageFilter
 PIN_W, PIN_H = 1000, 1500
 
 # ── Colour palette ────────────────────────────
-BG_COLOR    = (255, 255, 255)   # fallback white background
 BADGE_BG    = (255, 153,   0)   # Amazon orange — trust badge
 BADGE_FG    = (255, 255, 255)   # white text on badge
 TITLE_FG    = ( 26,  26,  26)   # near-black title
 PRICE_FG    = (178,  34,  34)   # firebrick red — price stands out
-CTA_BG      = (255, 153,   0)   # Amazon orange — CTA button
-CTA_FG      = (255, 255, 255)   # white CTA text
 CARD_BG     = (255, 255, 255)   # white card behind product image
 DIVIDER_CLR = (220, 220, 220)   # light gray rule
+
+# ── Category gradient backgrounds (top → bottom) ──────────────────────────────
+# Makes pins look like editorial content, not Amazon ads.
+# Each pair is (top_rgb, bottom_rgb). Bottom always near-white so text is readable.
+# See CLAUDE.md for rationale and full palette.
+_CATEGORY_GRADIENTS: dict[str, tuple[tuple, tuple]] = {
+    "Beauty & Personal Care":   ((253, 220, 220), (255, 248, 248)),
+    "Home & Kitchen":           ((255, 243, 220), (255, 252, 245)),
+    "Arts & Crafts":            ((237, 220, 255), (250, 245, 255)),
+    "Pet Supplies":             ((220, 245, 235), (245, 255, 250)),
+    "Clothing & Fashion":       ((255, 220, 230), (255, 248, 252)),
+    "Baby & Nursery":           ((220, 235, 255), (245, 250, 255)),
+    "Sports & Fitness":         ((220, 235, 255), (240, 248, 255)),
+    "Tools & Home Improvement": ((235, 230, 220), (250, 248, 245)),
+    "Outdoor & Patio":          ((220, 240, 220), (245, 255, 245)),
+    "Electronics":              ((215, 228, 245), (240, 246, 255)),
+    "Health & Household":       ((220, 245, 235), (245, 255, 250)),
+    "Office & Desk":            ((240, 235, 225), (252, 250, 248)),
+    "Toys & Games":             ((255, 240, 200), (255, 252, 235)),
+}
+_DEFAULT_GRADIENT = ((240, 240, 240), (255, 255, 255))
 
 # ── Layout (y-coordinates in px) ─────────────
 PAD      = 60     # horizontal padding
@@ -35,9 +53,7 @@ IMG_TOP  = 140    # product image zone top
 IMG_BOT  = 870    # product image zone bottom (730px = 49% of 1500 ✓)
 RULE_Y   = 910    # horizontal divider
 TITLE_Y  = 950    # title text top
-PRICE_Y  = 1210   # price text top
-CTA_Y1   = 1310   # CTA button top
-CTA_Y2   = 1420   # CTA button bottom
+PRICE_Y  = 1250   # price text top (moved down — no CTA button below)
 
 # ── Gemini background ─────────────────────────
 GOOGLE_AI_API_KEY = os.environ.get("GOOGLE_AI_API_KEY", "")
@@ -200,6 +216,27 @@ def _apply_background(bg: Image.Image) -> Image.Image:
 
 
 # ─────────────────────────────────────────────
+#  Gradient background builder
+# ─────────────────────────────────────────────
+def _make_gradient(category: str) -> Image.Image:
+    """
+    Build a vertical gradient background for the given category.
+    Top colour is category-specific; bottom is near-white so the text
+    zone is always clean and readable. No external API needed.
+    """
+    top, bot = _CATEGORY_GRADIENTS.get(category, _DEFAULT_GRADIENT)
+    canvas = Image.new("RGB", (PIN_W, PIN_H))
+    draw   = ImageDraw.Draw(canvas)
+    for y in range(PIN_H):
+        t = y / (PIN_H - 1)
+        r = int(top[0] + (bot[0] - top[0]) * t)
+        g = int(top[1] + (bot[1] - top[1]) * t)
+        b = int(top[2] + (bot[2] - top[2]) * t)
+        draw.line([(0, y), (PIN_W, y)], fill=(r, g, b))
+    return canvas
+
+
+# ─────────────────────────────────────────────
 #  Font loader
 # ─────────────────────────────────────────────
 def _font(size: int, bold: bool = False) -> ImageFont.FreeTypeFont:
@@ -305,27 +342,24 @@ def _render(product: dict) -> tuple[Image.Image, str] | None:
         print(f"    [!] Source image too small ({sw}×{sh}) — skipping")
         return None
 
-    # ── Canvas: lifestyle background or plain white ───────────────
+    # ── Canvas: category gradient (editorial feel, not ad) ───────────
     category = product.get("category", "")
-    bg_img   = _generate_lifestyle_bg(product)
 
+    # Try Gemini lifestyle bg first; fall back to gradient (always works)
+    bg_img = _generate_lifestyle_bg(product)
     if bg_img is not None:
-        canvas     = _apply_background(bg_img)
-        has_bg     = True
-        short      = _clean_title(product["title"])
-        print(f"    [✓] Lifestyle background applied for: {short[:40]}")
+        canvas = _apply_background(bg_img)
+        print(f"    [✓] Lifestyle background applied for: {_clean_title(product['title'])[:40]}")
     else:
-        canvas     = Image.new("RGB", (PIN_W, PIN_H), BG_COLOR)
-        has_bg     = False
+        canvas = _make_gradient(category)
 
     draw = ImageDraw.Draw(canvas)
 
-    f_badge = _font(30, bold=True)
-    f_title = _font(46, bold=True)
-    f_price = _font(58, bold=True)
-    f_cta   = _font(36, bold=True)
+    f_badge = _font(28, bold=True)
+    f_title = _font(44, bold=True)
+    f_price = _font(64, bold=True)
 
-    # ── White card behind product (always — doubles as pop on background) ──
+    # ── White card behind product (lifted card on gradient) ───────────
     card_pad = 24
     _rounded_rect(
         draw,
@@ -341,7 +375,7 @@ def _render(product: dict) -> tuple[Image.Image, str] | None:
 
     # ── Trust badge ───────────────────────────
     badge_txt = "Amazon Find"
-    bp        = (26, 14)
+    bp        = (22, 12)
     bw        = draw.textbbox((0, 0), badge_txt, font=f_badge)[2] + bp[0] * 2
     bh        = draw.textbbox((0, 0), badge_txt, font=f_badge)[3] + bp[1] * 2
     _rounded_rect(draw, (PAD, BADGE_Y, PAD + bw, BADGE_Y + bh), r=8, fill=BADGE_BG)
@@ -363,29 +397,17 @@ def _render(product: dict) -> tuple[Image.Image, str] | None:
     short = _clean_title(product["title"])
     lines = _wrap(short, f_title, PIN_W - PAD * 2, draw, max_lines=3)
     ty    = TITLE_Y
-    lh    = draw.textbbox((0, 0), "A", font=f_title)[3] + 10
+    lh    = draw.textbbox((0, 0), "A", font=f_title)[3] + 12
     for line in lines:
         draw.text((PAD, ty), line, font=f_title, fill=TITLE_FG)
         ty += lh
 
-    # ── Price ─────────────────────────────────
+    # ── Price (larger, no CTA button — description handles the click) ─
+    # Per CLAUDE.md: "Shop on Amazon →" button on image = ad signal, kills saves.
     raw_price = product.get("price", "")
     price_str = raw_price if "$" in raw_price else (f"${raw_price}" if raw_price else "")
     if price_str:
         draw.text((PAD, PRICE_Y), price_str, font=f_price, fill=PRICE_FG)
-
-    # ── CTA button ────────────────────────────
-    cta_txt      = "Shop on Amazon  →"
-    cbbox        = draw.textbbox((0, 0), cta_txt, font=f_cta)
-    cw, ch       = cbbox[2] - cbbox[0], cbbox[3] - cbbox[1]
-    cp           = 32
-    cx1, cy1     = PAD, CTA_Y1
-    cx2, cy2     = cx1 + cw + cp * 2, CTA_Y2
-    _rounded_rect(draw, (cx1, cy1, cx2, cy2), r=12, fill=CTA_BG)
-    draw.text(
-        (cx1 + cp, cy1 + (CTA_Y2 - CTA_Y1 - ch) // 2),
-        cta_txt, font=f_cta, fill=CTA_FG,
-    )
 
     # ── Save ──────────────────────────────────
     tmp = tempfile.NamedTemporaryFile(delete=False, suffix=".jpg")
