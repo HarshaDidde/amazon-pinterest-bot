@@ -346,31 +346,49 @@ def _create_pin(page, product: dict, board_name: str, pin_title: str, descriptio
             print(f"  [x] Could not find Publish button for: {product['title'][:50]}")
             return None
 
-        time.sleep(6)
+        time.sleep(3)
 
-        # Layer 1: redirected directly to pin page
-        current_url = page.url
-        if re.search(r'/pin/\d{10,}', current_url):
-            return current_url
+        # Layer 1: wait for Pinterest to redirect to the pin page
+        try:
+            page.wait_for_url(
+                lambda url: bool(re.search(r'/pin/\d+', url)),
+                timeout=8000,
+            )
+            return page.url
+        except PWTimeout:
+            pass
 
-        # Layer 2: scan all links on the page for a real pin URL
+        # Layer 2: look for "View pin" link in success notification
+        for sel in [
+            'a:has-text("View pin")',
+            'a:has-text("View Pin")',
+            'a[data-test-id*="view"] [href*="/pin/"]',
+        ]:
+            try:
+                el = page.locator(sel).first
+                if el.is_visible(timeout=2000):
+                    href = el.get_attribute("href") or ""
+                    if re.search(r'/pin/\d{10,}', href):
+                        return f"https://www.pinterest.com{href}" if href.startswith("/") else href
+            except Exception:
+                pass
+
+        # Layer 3: scan all pin links visible on the page
         try:
             for link in page.locator('a[href*="/pin/"]').all():
                 href = link.get_attribute("href") or ""
                 if re.search(r'/pin/\d{10,}', href):
-                    if href.startswith("http"):
-                        return href
-                    return f"https://www.pinterest.com{href}"
+                    return f"https://www.pinterest.com{href}" if href.startswith("/") else href
         except Exception:
             pass
 
-        # Layer 3: wait and re-check URL
-        time.sleep(4)
+        # Layer 4: give it a few more seconds and re-check
+        time.sleep(5)
         current_url = page.url
         if re.search(r'/pin/\d{10,}', current_url):
             return current_url
 
-        # Layer 4: pin posted but URL not captured
+        # Layer 5: pin posted but URL not captured
         return f"posted_no_url_{int(time.time())}"
 
     except Exception as e:

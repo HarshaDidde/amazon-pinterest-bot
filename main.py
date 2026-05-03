@@ -52,7 +52,7 @@ def run():
     print(f"\n[2] Processing {len(CATEGORIES)} categories (revenue-priority order)...\n")
 
     total_posted = 0
-    run_results  = []   # (category_name, posted_count)
+    run_results  = {cat["name"]: 0 for cat in CATEGORIES}  # all 13 pre-populated
 
     with pinterest_session() as page:
         for cat in CATEGORIES:
@@ -72,7 +72,6 @@ def run():
 
             if not products:
                 print("    No products fetched — skipping.\n")
-                run_results.append((cat["name"], 0))
                 continue
 
             # Deduplicate: remove already-posted ASINs, within-batch ASIN dupes,
@@ -90,7 +89,6 @@ def run():
 
             if not new_products:
                 print("    All products in cooldown — skipping.\n")
-                run_results.append((cat["name"], 0))
                 continue
 
             print(f"    {len(new_products)} new  |  {skipped} skipped (cooldown)")
@@ -118,9 +116,9 @@ def run():
                 except Exception as e:
                     print(f"    [!] Sheet log failed for {product['asin']}: {e}")
 
-            cat_count     = len(successfully_posted)
-            total_posted += cat_count
-            run_results.append((cat["name"], cat_count))
+            cat_count               = len(successfully_posted)
+            total_posted           += cat_count
+            run_results[cat["name"]] = cat_count
             print()
 
         # ── Step 3: Guarantee at least 1 pin ─────────────────────────────
@@ -153,8 +151,10 @@ def run():
     print(f"  Run complete  |  {total_posted} pins posted  |  {now.strftime('%Y-%m-%d %H:%M')}")
     print()
     print("  Per-category breakdown:")
-    for name, count in run_results:
-        bar = "█" * count
+    for cat in CATEGORIES:
+        name  = cat["name"]
+        count = run_results[name]
+        bar   = "█" * count
         print(f"    {name:<28}  {bar} ({count})")
     print("=" * 65)
 

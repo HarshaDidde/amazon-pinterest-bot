@@ -93,6 +93,13 @@ def _parse_bestsellers_page(soup: BeautifulSoup, category_name: str, limit: int 
         # Broad fallback: any div with a valid data-asin attribute
         items = [t for t in soup.select("div[data-asin]") if len(t.get("data-asin", "")) == 10]
 
+    if not items:
+        title_el = soup.find("title")
+        page_title = title_el.get_text()[:80] if title_el else "no-title"
+        n_data_asin = len(soup.select("*[data-asin]"))
+        n_divs = len(soup.select("div"))
+        print(f"    [debug] 0 items — page_title='{page_title}' data-asin={n_data_asin} divs={n_divs}")
+
     for item in items:
         if len(products) >= limit:
             break
