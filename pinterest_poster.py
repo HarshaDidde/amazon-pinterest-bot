@@ -344,6 +344,11 @@ def _login(page):
         return True
     except PWTimeout:
         print("    [x] Pinterest login timed out — check credentials")
+        try:
+            page.screenshot(path="debug-login-failure.png", full_page=True)
+            print("    [debug] Screenshot saved: debug-login-failure.png")
+        except Exception:
+            pass
         return False
 
 
