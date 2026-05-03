@@ -12,10 +12,38 @@
 import math
 from datetime import datetime
 
-from config import CATEGORIES, SEASONAL_BOOSTS, MAX_PINS_PER_RUN
+from config import (
+    CATEGORIES, SEASONAL_BOOSTS, MAX_PINS_PER_RUN,
+    PINTEREST_ACCOUNT_START_DATE,
+)
 from amazon_fetcher import fetch_best_sellers
 from pinterest_poster import post_pins_for_category, pinterest_session
 from sheet_logger import get_posted_asins, log_posted_product
+
+
+def _posting_ramp(account_age_days: int) -> tuple[int, int, str]:
+    """
+    Returns (per_category_cap, max_per_run, stage_label) based on how many
+    days old the Pinterest account is.  Ramps up automatically — no manual
+    config edits needed.
+
+    Stage schedule:
+      Days  0– 6  (Week 1):     1/board,  13/run  →  26 pins/day
+      Days  7–13  (Week 2):     2/board,  18/run  →  36 pins/day
+      Days 14–29  (Weeks 3–4):  3/board,  24/run  →  48 pins/day
+      Days 30–59  (Month 2):    4/board,  28/run  →  56 pins/day
+      Days 60+    (Month 3+):   uncapped, 30/run  →  full revenue weighting
+    """
+    if account_age_days < 7:
+        return 1, 13, "Week 1 — 1 pin/board"
+    elif account_age_days < 14:
+        return 2, 18, "Week 2 — up to 2/board"
+    elif account_age_days < 30:
+        return 3, 24, "Weeks 3–4 — up to 3/board"
+    elif account_age_days < 60:
+        return 4, 28, "Month 2 — up to 4/board"
+    else:
+        return 99, MAX_PINS_PER_RUN, "Month 3+ — full rate"
 
 
 def _seasonal_posts(category: dict, month: int) -> int:
@@ -31,12 +59,15 @@ def _category_summary(name: str, fetched: int, skipped: int, posted: int):
 
 
 def run():
-    now   = datetime.now()
-    month = now.month
+    now         = datetime.now()
+    month       = now.month
+    account_age = (now.date() - PINTEREST_ACCOUNT_START_DATE).days
+    per_cat_cap, effective_max, stage = _posting_ramp(account_age)
 
     print("=" * 65)
     print(f"  Amazon.com → Pinterest Bot  |  {now.strftime('%Y-%m-%d %H:%M')}")
-    print(f"  Seasonal month: {now.strftime('%B')}  |  Max pins this run: {MAX_PINS_PER_RUN}")
+    print(f"  Seasonal month: {now.strftime('%B')}  |  Account age: {account_age}d")
+    print(f"  Ramp stage: {stage}  |  Run cap: {effective_max} pins")
     print("=" * 65)
 
     # ── Step 1: Load deduplication list ──────────────────────────────
@@ -56,12 +87,12 @@ def run():
 
     with pinterest_session() as page:
         for cat in CATEGORIES:
-            if total_posted >= MAX_PINS_PER_RUN:
-                print(f"  [!] Reached MAX_PINS_PER_RUN ({MAX_PINS_PER_RUN}) — stopping early.")
+            if total_posted >= effective_max:
+                print(f"  [!] Reached run cap ({effective_max}) — stopping early.")
                 break
 
-            limit = _seasonal_posts(cat, month)
-            remaining_budget = MAX_PINS_PER_RUN - total_posted
+            limit = min(_seasonal_posts(cat, month), per_cat_cap)  # ramp gate
+            remaining_budget = effective_max - total_posted
             limit = min(limit, remaining_budget)
 
             print(f"[→] {cat['name']}  (target: {limit} pins, commission: {cat['commission_rate']}%)")
