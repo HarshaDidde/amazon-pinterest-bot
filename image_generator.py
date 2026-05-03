@@ -135,7 +135,8 @@ def _build_bg_prompt(product: dict) -> str:
 
 def _generate_lifestyle_bg(product: dict) -> Image.Image | None:
     """
-    Call Gemini Imagen to generate a product-contextual lifestyle background.
+    Call Gemini to generate a product-contextual lifestyle background.
+    Uses gemini-2.5-flash-image (free AI Studio API key compatible).
     Returns a PIL Image or None if the key is missing / call fails.
     Failure is always silent — caller falls back to white canvas.
     """
@@ -148,17 +149,13 @@ def _generate_lifestyle_bg(product: dict) -> Image.Image | None:
         client = google_genai.Client(api_key=GOOGLE_AI_API_KEY)
         prompt = _build_bg_prompt(product)
 
-        result = client.models.generate_images(
-            model="imagen-3.0-generate-001",
-            prompt=prompt,
-            config=genai_types.GenerateImagesConfig(
-                number_of_images=1,
-                aspect_ratio="3:4",   # portrait — closest to 1000×1500
-            ),
+        response = client.models.generate_content(
+            model="gemini-2.5-flash-image",
+            contents=prompt,
         )
-        if result.generated_images:
-            raw = result.generated_images[0].image.image_bytes
-            return Image.open(io.BytesIO(raw)).convert("RGB")
+        for part in response.parts:
+            if part.inline_data is not None:
+                return Image.open(io.BytesIO(part.inline_data.data)).convert("RGB")
 
     except Exception as e:
         print(f"    [i] Gemini background skipped: {e}")

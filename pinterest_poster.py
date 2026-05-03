@@ -8,6 +8,7 @@ import os
 import re
 import time
 import random
+from contextlib import contextmanager
 from pathlib import Path
 from playwright.sync_api import sync_playwright, TimeoutError as PWTimeout
 
@@ -379,56 +380,98 @@ def _create_pin(page, product: dict, board_name: str, pin_title: str, descriptio
         Path(image_path).unlink(missing_ok=True)
 
 
+_BROWSER_CONTEXT = dict(
+    user_agent=(
+        "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
+        "AppleWebKit/537.36 (KHTML, like Gecko) "
+        "Chrome/124.0.0.0 Safari/537.36"
+    ),
+    viewport={"width": 1280, "height": 900},
+)
+
+
+@contextmanager
+def pinterest_session():
+    """
+    Context manager yielding a single logged-in Pinterest page.
+    Use this to share one login across all category posts — avoids
+    repeated logins that trigger Pinterest's security checks.
+
+    Usage in main.py:
+        with pinterest_session() as page:
+            post_pins_for_category(..., page=page)
+    """
+    if not PINTEREST_EMAIL or not PINTEREST_PASSWORD:
+        raise RuntimeError("PINTEREST_EMAIL or PINTEREST_PASSWORD not set")
+
+    with sync_playwright() as p:
+        browser = p.chromium.launch(headless=True)
+        ctx     = browser.new_context(**_BROWSER_CONTEXT)
+        pg      = ctx.new_page()
+        if not _login(pg):
+            browser.close()
+            raise RuntimeError("Pinterest login failed — check credentials")
+        try:
+            yield pg
+        finally:
+            browser.close()
+
+
+def _post_batch(
+    page,
+    products: list[dict],
+    board_name: str,
+    hashtags: list[str],
+    template_key: str,
+    limit: int,
+) -> list[dict]:
+    """Inner posting loop — uses an existing logged-in page."""
+    posted = []
+    for i, product in enumerate(products[:limit]):
+        print(f"  [{i+1}/{min(len(products), limit)}] {product['title'][:60]}")
+        pin_title   = _build_pin_title(product, template_key)
+        description = _build_description(product, hashtags, template_key)
+        pin_url     = _create_pin(page, product, board_name, pin_title, description)
+        if pin_url:
+            product["pin_url"] = pin_url
+            posted.append(product)
+            print(f"  [✓] Posted → {pin_url}")
+        else:
+            print(f"  [!] Failed — continuing to next product")
+        if i < min(len(products), limit) - 1:
+            time.sleep(POST_DELAY_SECONDS)
+    return posted
+
+
 def post_pins_for_category(
     products: list[dict],
     board_name: str,
     hashtags: list[str],
     template_key: str = "",
     limit: int = 10,
+    page=None,
 ) -> list[dict]:
     """
-    Posts up to `limit` products for one category using browser automation.
-    Returns list of successfully posted products with pin_url set.
+    Posts up to `limit` products for one category.
+    Pass `page` from pinterest_session() to reuse an existing login.
+    If page is None, opens its own browser session (legacy / standalone use).
     """
     if not PINTEREST_EMAIL or not PINTEREST_PASSWORD:
         print("  [x] PINTEREST_EMAIL or PINTEREST_PASSWORD env var not set — skipping")
         return []
 
-    posted = []
+    if page is not None:
+        return _post_batch(page, products, board_name, hashtags, template_key, limit)
 
+    # Standalone fallback — opens its own session
+    posted = []
     with sync_playwright() as p:
         browser = p.chromium.launch(headless=True)
-        context = browser.new_context(
-            user_agent=(
-                "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
-                "AppleWebKit/537.36 (KHTML, like Gecko) "
-                "Chrome/124.0.0.0 Safari/537.36"
-            ),
-            viewport={"width": 1280, "height": 900},
-        )
-        page = context.new_page()
-
-        if not _login(page):
+        ctx     = browser.new_context(**_BROWSER_CONTEXT)
+        pg      = ctx.new_page()
+        if not _login(pg):
             browser.close()
             return []
-
-        for i, product in enumerate(products[:limit]):
-            print(f"  [{i+1}/{min(len(products), limit)}] {product['title'][:60]}")
-            pin_title   = _build_pin_title(product, template_key)
-            description = _build_description(product, hashtags, template_key)
-
-            pin_url = _create_pin(page, product, board_name, pin_title, description)
-
-            if pin_url:
-                product["pin_url"] = pin_url
-                posted.append(product)
-                print(f"  [✓] Posted → {pin_url}")
-            else:
-                print(f"  [!] Failed — continuing to next product")
-
-            if i < min(len(products), limit) - 1:
-                time.sleep(POST_DELAY_SECONDS)
-
+        posted = _post_batch(pg, products, board_name, hashtags, template_key, limit)
         browser.close()
-
     return posted

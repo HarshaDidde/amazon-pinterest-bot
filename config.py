@@ -76,7 +76,7 @@ CATEGORIES = [
     },
     {
         "name":                 "Arts & Crafts",
-        "bestseller_url":       "https://www.amazon.com/gp/bestsellers/arts-and-crafts",
+        "bestseller_url":       "https://www.amazon.com/Best-Sellers-Arts-Crafts-Sewing/zgbs/arts-and-crafts",
         "board_name":           "Arts & Crafts",
         "commission_rate":      4.5,
         "daily_posts":          3,
@@ -196,7 +196,7 @@ CATEGORIES = [
     },
     {
         "name":                 "Toys & Games",
-        "bestseller_url":       "https://www.amazon.com/gp/bestsellers/toys",
+        "bestseller_url":       "https://www.amazon.com/Best-Sellers-Toys-Games/zgbs/toys-and-games",
         "board_name":           "Toys & Games",
         "commission_rate":      3.0,
         "daily_posts":          1,
