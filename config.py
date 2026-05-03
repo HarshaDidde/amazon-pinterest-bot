@@ -83,7 +83,7 @@ CATEGORIES = [
     },
     {
         "name":                 "Arts & Crafts",
-        "bestseller_url":       "https://www.amazon.com/gp/bestsellers/arts-and-crafts",
+        "bestseller_url":       "https://www.amazon.com/gp/bestsellers/arts-and-crafts/379408011",
         "board_name":           "Arts & Crafts",
         "commission_rate":      4.5,
         "daily_posts":          3,

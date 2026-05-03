@@ -443,10 +443,17 @@ def _post_batch(
     template_key: str,
     limit: int,
 ) -> list[dict]:
-    """Inner posting loop — uses an existing logged-in page."""
+    """
+    Inner posting loop — iterates all candidates until `limit` pins are
+    successfully posted or the list is exhausted. A failed product (no price,
+    image error, etc.) does NOT count against the limit — the next candidate
+    is tried instead.
+    """
     posted = []
-    for i, product in enumerate(products[:limit]):
-        print(f"  [{i+1}/{min(len(products), limit)}] {product['title'][:60]}")
+    for product in products:
+        if len(posted) >= limit:
+            break
+        print(f"  [{len(posted)+1}/{limit}] {product['title'][:60]}")
         pin_title   = _build_pin_title(product, template_key)
         description = _build_description(product, hashtags, template_key)
         pin_url     = _create_pin(page, product, board_name, pin_title, description)
@@ -454,10 +461,10 @@ def _post_batch(
             product["pin_url"] = pin_url
             posted.append(product)
             print(f"  [✓] Posted → {pin_url}")
+            if len(posted) < limit:
+                time.sleep(POST_DELAY_SECONDS)
         else:
-            print(f"  [!] Failed — continuing to next product")
-        if i < min(len(products), limit) - 1:
-            time.sleep(POST_DELAY_SECONDS)
+            print(f"  [!] Failed — trying next product")
     return posted
 
 
