@@ -17,7 +17,7 @@ GOOGLE_CREDENTIALS_FILE = "google_credentials.json"
 
 # ── Bot behaviour ─────────────────────────────
 REPOST_COOLDOWN_DAYS = 28     # days before a product can be reposted
-MAX_PINS_PER_RUN     = 15     # new US account: start conservative, ramp after 2 weeks
+MAX_PINS_PER_RUN     = 13     # day-1 account: 1 per board × 13 boards, ramp after 2 weeks
 
 # ─────────────────────────────────────────────────────────────────────────────
 #  Category config
@@ -46,7 +46,7 @@ MAX_PINS_PER_RUN     = 15     # new US account: start conservative, ramp after 2
 #    12. Office & Desk   4.0% × 5  = 20  → 2 posts/day
 #    13. Toys            3.0% × 5  = 15  → 1 post/day
 #  ──────────────────────────────────────────────
-#  Total per run: 34 pins → capped at 30 by MAX_PINS_PER_RUN
+#  Total per run: 13 pins (1 per board) — ramp up daily_posts after 2 weeks
 # ─────────────────────────────────────────────────────────────────────────────
 
 CATEGORIES = [
@@ -55,7 +55,7 @@ CATEGORIES = [
         "bestseller_url":       "https://www.amazon.com/gp/bestsellers/beauty",
         "board_name":           "Beauty & Personal Care",
         "commission_rate":      8.0,
-        "daily_posts":          4,
+        "daily_posts":          1,
         "description_template": "Beauty & Personal Care",
         "hashtags": [
             "#AmazonBeauty", "#SkincareFinds", "#BeautyFinds",
@@ -67,7 +67,7 @@ CATEGORIES = [
         "bestseller_url":       "https://www.amazon.com/gp/bestsellers/kitchen",
         "board_name":           "Home & Kitchen",
         "commission_rate":      4.5,
-        "daily_posts":          4,
+        "daily_posts":          1,
         "description_template": "Home & Kitchen",
         "hashtags": [
             "#HomeDecor", "#KitchenFinds", "#HomeEssentials",
@@ -79,7 +79,7 @@ CATEGORIES = [
         "bestseller_url":       "https://www.amazon.com/gp/bestsellers/arts-and-crafts",
         "board_name":           "Arts & Crafts",
         "commission_rate":      4.5,
-        "daily_posts":          3,
+        "daily_posts":          1,
         "description_template": "Arts & Crafts",
         "hashtags": [
             "#CraftSupplies", "#ArtFinds", "#DIYCrafts",
@@ -91,7 +91,7 @@ CATEGORIES = [
         "bestseller_url":       "https://www.amazon.com/gp/bestsellers/pet-supplies",
         "board_name":           "Pet Supplies",
         "commission_rate":      4.0,
-        "daily_posts":          3,
+        "daily_posts":          1,
         "description_template": "Pet Supplies",
         "hashtags": [
             "#PetFinds", "#DogFinds", "#CatFinds",
@@ -103,7 +103,7 @@ CATEGORIES = [
         "bestseller_url":       "https://www.amazon.com/gp/bestsellers/fashion",
         "board_name":           "Clothing & Fashion",
         "commission_rate":      4.0,
-        "daily_posts":          3,
+        "daily_posts":          1,
         "description_template": "Clothing & Fashion",
         "hashtags": [
             "#AmazonFashion", "#FashionFinds", "#OOTD",
@@ -115,7 +115,7 @@ CATEGORIES = [
         "bestseller_url":       "https://www.amazon.com/gp/bestsellers/baby-products",
         "board_name":           "Baby & Nursery",
         "commission_rate":      4.5,
-        "daily_posts":          3,
+        "daily_posts":          1,
         "description_template": "Baby & Nursery",
         "hashtags": [
             "#BabyFinds", "#NurseryIdeas", "#BabyEssentials",
@@ -127,7 +127,7 @@ CATEGORIES = [
         "bestseller_url":       "https://www.amazon.com/gp/bestsellers/sporting-goods",
         "board_name":           "Sports & Fitness",
         "commission_rate":      4.5,
-        "daily_posts":          3,
+        "daily_posts":          1,
         "description_template": "Sports & Fitness",
         "hashtags": [
             "#FitnessFinds", "#WorkoutGear", "#HomeGym",
@@ -139,7 +139,7 @@ CATEGORIES = [
         "bestseller_url":       "https://www.amazon.com/gp/bestsellers/hi",
         "board_name":           "Tools & Home Improvement",
         "commission_rate":      5.5,
-        "daily_posts":          2,
+        "daily_posts":          1,
         "description_template": "Tools & Home Improvement",
         "hashtags": [
             "#HomeImprovement", "#DIYFinds", "#AmazonTools",
@@ -151,7 +151,7 @@ CATEGORIES = [
         "bestseller_url":       "https://www.amazon.com/gp/bestsellers/lawn-garden",
         "board_name":           "Outdoor & Patio",
         "commission_rate":      4.5,
-        "daily_posts":          2,
+        "daily_posts":          1,
         "description_template": "Outdoor & Patio",
         "hashtags": [
             "#OutdoorFinds", "#PatioDecor", "#BackyardGoals",
@@ -163,7 +163,7 @@ CATEGORIES = [
         "bestseller_url":       "https://www.amazon.com/gp/bestsellers/electronics",
         "board_name":           "Electronics",
         "commission_rate":      4.0,
-        "daily_posts":          2,
+        "daily_posts":          1,
         "description_template": "Electronics",
         "hashtags": [
             "#TechFinds", "#Gadgets", "#SmartHome",
@@ -175,7 +175,7 @@ CATEGORIES = [
         "bestseller_url":       "https://www.amazon.com/gp/bestsellers/hpc",
         "board_name":           "Health & Household",
         "commission_rate":      2.5,
-        "daily_posts":          2,
+        "daily_posts":          1,
         "description_template": "Health & Household",
         "hashtags": [
             "#HealthyLiving", "#WellnessFinds", "#SelfCare",
@@ -187,7 +187,7 @@ CATEGORIES = [
         "bestseller_url":       "https://www.amazon.com/gp/bestsellers/office-products",
         "board_name":           "Office & Desk",
         "commission_rate":      4.0,
-        "daily_posts":          2,
+        "daily_posts":          1,
         "description_template": "Office & Desk",
         "hashtags": [
             "#OfficeFinds", "#DeskSetup", "#HomeOffice",
