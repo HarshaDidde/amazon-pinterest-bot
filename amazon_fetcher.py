@@ -41,6 +41,25 @@ def _build_affiliate_link(asin: str) -> str:
     return f"https://www.amazon.com/dp/{asin}?tag={AMAZON_ASSOCIATE_TAG}"
 
 
+def _fetch_page_playwright(url: str) -> BeautifulSoup | None:
+    """Fetch a JS-rendered page using Playwright. Fallback for categories
+    where httpx returns empty results due to client-side rendering."""
+    try:
+        from playwright.sync_api import sync_playwright
+        with sync_playwright() as p:
+            browser = p.chromium.launch(headless=True)
+            ctx  = browser.new_context(user_agent=random.choice(USER_AGENTS))
+            page = ctx.new_page()
+            page.goto(url, wait_until="networkidle", timeout=30000)
+            time.sleep(3)
+            html = page.content()
+            browser.close()
+            return BeautifulSoup(html, "html.parser")
+    except Exception as e:
+        print(f"    [!] Playwright fetch error: {e}")
+        return None
+
+
 def _fetch_page(url: str, retries: int = 3) -> BeautifulSoup | None:
     """Fetch a page with retries and random delay."""
     for attempt in range(retries):
@@ -188,6 +207,20 @@ def fetch_best_sellers(bestseller_url: str, category_name: str, n: int = None) -
         return []
 
     products = _parse_bestsellers_page(soup, category_name, limit=limit)
+
+    # JS-rendered page fallback: if httpx got HTML but no products were parsed,
+    # retry with Playwright which executes JavaScript and waits for content to load
+    if not products:
+        print(f"    [!] 0 products from httpx — retrying with Playwright (JS render)...")
+        soup = _fetch_page_playwright(bestseller_url)
+        if soup:
+            products = _parse_bestsellers_page(soup, category_name, limit=limit)
+            if products:
+                print(f"    [✓] Playwright fetch recovered {len(products)} products")
+            else:
+                print(f"    [x] Playwright also returned 0 products — page structure unknown")
+        if not soup:
+            print(f"    [x] Playwright fetch failed entirely")
 
     # Try page 2 if we still need more products
     if len(products) < limit:
